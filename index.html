@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기원 시뮬레이터 - 이펙트 초월 에디션</title>
+    <title>기원</title>
     <script type="importmap">
         {
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js",
                 "firebase/database": "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"
             }
@@ -25,7 +24,7 @@
             display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
         }
         
-        /* 🚪 초기 닉네임 설정 팝업 */
+        /* 🚪 초기 닉네임 설정 팝업 (새로고침 시 무조건 등장!) */
         .name-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 10, 21, 0.95); z-index: 2000;
@@ -64,34 +63,6 @@
         .c6-subtitle { color: #aaa; margin-top: 8px; font-size: 1em; opacity: 0; }
         .c6-btn { margin-top: 30px; padding: 10px 30px; border-radius: 20px; background: transparent; color: white; border: 1px solid #666; cursor: pointer; opacity: 0; }
 
-        /* 🏆 최종 대결 결과 시상대 모달 */
-        .podium-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 5, 15, 0.96); z-index: 2500;
-            display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.5s ease;
-        }
-        .podium-box {
-            background: linear-gradient(135deg, #111a2e 0%, #080d1a 100%);
-            border: 2px solid var(--gold); padding: 35px; border-radius: 25px;
-            width: 500px; text-align: center; box-shadow: 0 0 50px rgba(255, 204, 0, 0.35);
-            box-sizing: border-box;
-        }
-        .podium-list {
-            display: flex; flex-direction: column; gap: 12px; margin: 25px 0;
-            max-height: 250px; overflow-y: auto; padding-right: 5px;
-        }
-        .podium-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 18px; border-radius: 12px; font-weight: bold;
-            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.08);
-        }
-        .podium-item.first {
-            background: linear-gradient(90deg, rgba(255, 204, 0, 0.15) 0%, rgba(255, 204, 0, 0.02) 100%);
-            border-color: var(--gold); box-shadow: 0 0 15px rgba(255, 204, 0, 0.15);
-        }
-        .podium-item.first .rank-medal { color: var(--gold); text-shadow: 0 0 8px var(--gold); }
-        
         /* 🖥️ 격자 형태 메인 레이아웃 보완 */
         .wrapper { width: 100%; max-width: 1550px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         .main-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; width: 100%; align-items: start; }
@@ -107,63 +78,35 @@
         .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
         .stat b { font-size: 1.1em; color: var(--gold); }
 
-        /* 🌠 기원 스테이지 및 파티클 캔버스 레이어 */
+        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
         .wish-stage { 
             position: relative; width: 100%; min-height: 480px; height: 480px;
-            background: radial-gradient(circle at center, #0b1120 0%, #02040a 100%); 
+            background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
             border-radius: 20px; display: flex; justify-content: center; align-items: center; 
-            gap: 10px; padding: 20px; border: 1px solid #1e293b; overflow: hidden; box-sizing: border-box;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
-            transition: all 0.3s ease;
-        }
-        
-        /* 🌌 실시간 성간 파티클용 캔버스 */
-        #particleCanvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 5;
+            gap: 10px; padding: 20px; border: 1px solid #253346; overflow: hidden; box-sizing: border-box;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
         
         #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        /* 🌠 충격파 및 초월적 파열 연출 */
+        /* 🌠 충격파 및 암전 연출 */
         .shockwave-impact { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 150; }
-        .wave-4 { border: 6px solid var(--purple); box-shadow: 0 0 60px var(--purple), inset 0 0 40px var(--purple); animation: explode-wave 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        .wave-5 { border: 8px solid var(--gold); box-shadow: 0 0 120px var(--gold), inset 0 0 70px var(--gold); animation: explode-wave 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        .wave-rad { border: 12px solid var(--radiance); box-shadow: 0 0 160px var(--radiance), inset 0 0 90px var(--radiance); animation: explode-wave 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        
-        /* 별빛포착 시 스테이지 일시 글리치 왜곡 연출 */
-        .stage-radiance-glitch {
-            animation: stage-glitch-shake 0.3s ease infinite;
-            box-shadow: inset 0 0 100px var(--radiance), 0 0 40px rgba(255, 78, 240, 0.3);
-            border-color: var(--radiance) !important;
-        }
-        @keyframes stage-glitch-shake {
-            0% { transform: translate(2px, 1px) rotate(0deg); filter: hue-rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); filter: hue-rotate(45deg); }
-            30% { transform: translate(0px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); filter: hue-rotate(90deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(2px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); filter: hue-rotate(0deg); }
-            90% { transform: translate(2px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
+        .wave-4 { border: 6px solid var(--purple); box-shadow: 0 0 50px var(--purple), inset 0 0 30px var(--purple); animation: explode-wave 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        .wave-5 { border: 8px solid var(--gold); box-shadow: 0 0 100px var(--gold), inset 0 0 50px var(--gold); animation: explode-wave 1.0s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        .wave-rad { border: 10px solid var(--radiance); box-shadow: 0 0 120px var(--radiance), inset 0 0 60px var(--radiance); animation: explode-wave 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        @keyframes explode-wave { 0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); border-width: 10px; } 100% { width: 1200px; height: 1200px; opacity: 0; transform: translate(-50%, -50%) scale(1); border-width: 1px; } }
+        .stage-dimmed { transition: background 0.1s ease-in; background: radial-gradient(circle at center, #020408 0%, #000000 100%) !important; }
 
-        @keyframes explode-wave { 0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); border-width: 15px; } 100% { width: 1500px; height: 1500px; opacity: 0; transform: translate(-50%, -50%) scale(1); border-width: 1px; } }
-        .stage-dimmed { transition: background 0.15s ease-in; background: radial-gradient(circle at center, #020306 0%, #000000 100%) !important; }
-
-        .shooting-star { width: 25px; height: 700px; position: absolute; top: -800px; left: -10%; border-radius: 100px; opacity: 0; transform: rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; z-index: 200; }
-        .star-3 { animation: genshin-fall-3 2.0s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .star-4 { animation: genshin-fall-4 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .star-5 { animation: genshin-fall-5 4.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .star-rad { animation: genshin-fall-rad 5.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .shooting-star { width: 20px; height: 600px; position: absolute; top: -700px; left: -10%; border-radius: 100px; opacity: 0; transform: rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; z-index: 200; }
+        .star-3 { animation: genshin-fall-3 2.0s ease-in-out forwards; }
+        .star-4 { animation: genshin-fall-4 3.5s ease-in-out forwards; }
+        .star-5 { animation: genshin-fall-5 4.2s ease-in-out forwards; }
+        .star-rad { animation: genshin-fall-rad 5.5s ease-in-out forwards; }
 
         @keyframes genshin-fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-4 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 250px 40px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 180px var(--purple); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-5 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 60px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 400px 80px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 300px 60px var(--gold); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-rad { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 80px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 450px 100px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 400px 90px var(--radiance); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-4 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 200px 30px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-5 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 350px 60px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 40px var(--gold); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-rad { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 400px 80px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 60px var(--radiance); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
 
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
 
@@ -175,8 +118,8 @@
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
         .card-back { background: #1e2230; border: 1px solid #334460; }
         .card-front { transform: rotateY(180deg); color: #000; font-weight: bold; text-align: center; display: flex; flex-direction: column; justify-content: center; font-size: 0.8em; }
-        .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 25px #ffcc00; }
-        .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 35px #ff4ef0; }
+        .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 20px #ffcc00; }
+        .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 30px #ff4ef0; }
         .res-4 { background: linear-gradient(145deg, #bf40ff, #fff); }
         .res-3 { background: #3d4a5d; color: white; }
 
@@ -246,21 +189,6 @@
     <button id="c6CloseBtn" class="c6-btn" onclick="closeC6Cutscene()">돌아가기</button>
 </div>
 
-<!-- 🏆 시상대 모달 레이어 -->
-<div id="podiumModal" class="podium-modal-overlay">
-    <div class="podium-box">
-        <h2 style="color: var(--gold); text-shadow: 0 0 15px var(--gold); margin: 0 0 10px 0;">🏆 대결 결과 시상대</h2>
-        <p style="font-size: 0.85em; color: #a5b4fc;">모든 대결 상대가 풀돌(C6)에 도달하여 승부가 종결되었습니다!</p>
-        
-        <div id="podiumList" class="podium-list"></div>
-
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-            <button id="btnRestartMatch" style="background: var(--gold); display: none;" onclick="restartMatch()">다시 대결하기 🔄</button>
-            <button style="background: #ef4444; color: white;" onclick="exitMatchRoom()">방 나가기 🚪</button>
-        </div>
-    </div>
-</div>
-
 <div class="wrapper">
     <div class="main-layout">
         
@@ -274,14 +202,11 @@
             </div>
             
             <div id="stage" class="wish-stage">
-                <!-- 🌌 성간 파티클 캔버스 추가 -->
-                <canvas id="particleCanvas"></canvas>
-                
                 <div id="multiNoticeOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,10,21,0.85); z-index:999; display:none; justify-content:center; align-items:center; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center;">
                     <span id="multiNoticeText">멀티방 참여 후 방장이 게임을 시작해야 기원이 가능합니다.</span>
                 </div>
                 <div id="effect-layer"></div>
-                <div id="stage-placeholder" style="color: rgba(255,255,255,0.15); font-size: 1.1em; pointer-events: none; text-align: center; font-weight: bold; z-index: 10;">
+                <div id="stage-placeholder" style="color: rgba(255,255,255,0.15); font-size: 1.1em; pointer-events: none; text-align: center; font-weight: bold;">
                     성간의 운석을 부르려면 하단의 기원 버튼을 누르세요
                 </div>
             </div>
@@ -345,16 +270,15 @@
             <span style="font-size:0.8em; color:#888;">풀돌(C6)을 완성할 때마다 독립된 판의 기록이 하나의 폴더처럼 누적되어 보존됩니다.</span>
         </h4>
         <div id="archiveGrid" class="archive-grid">
-            <div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요! 🎁</div>
+            <div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요!</div>
         </div>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getDatabase, ref, set, onValue, update, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, where, deleteDoc } from "firebase/firestore";
+    import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
@@ -367,40 +291,25 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'wish-1b853';
-    const c6RankCollection = collection(db, 'artifacts', appId, 'public', 'data', 'c6_rankings');
-
-    // 💾 요구사항: 새로고침 시 무조건 0으로 완벽 초기화되지만 완료 폴더 이력은 로컬에 누적 보존!
+    // 💾 요구사항: 새로고침 시 "과거 완료된 기록 폴더"만 로드하고, 현재 게임 진행 상황은 일절 저장/불러오지 않고 0으로 완전히 초기화!
     let historyFolders = JSON.parse(localStorage.getItem('genshin_sim_folders')) || [];
 
-    // 현재 판 데이터 완벽 초기화 세팅
+    // 🧼 [핵심] 현재 판 데이터는 로컬 스토리지 무시하고 언제나 완벽하게 '0' 상태에서 태초로 시작!
     let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-    let savedArchive = []; 
+    let savedArchive = []; // 이번 판에 얻은 5성 임시 배열
     
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
     
-    let myName = ""; 
+    let myName = ""; // 새로고침 시 언제나 다시 등록하도록 강제함
     let currentRoomId = null;
     let isFinishedC6 = false; 
     let isHost = false;
     let isMultiplayerMode = false;
     let isGameStarted = true;
-    let currentUser = null;
-    
-    // 실시간 대결자들의 돌파 현황 추적을 위한 변수
-    let opponentConsts = {};
-
-    // 🌌 성간 파티클 엔진용 렌더링 변수군
-    let canvas, ctx;
-    let particles = [];
-    let particleSpeedMultiplier = 1;
-    let starColorMode = 'normal'; // 'normal', 'purple', 'gold', 'radiance'
-    const MAX_PARTICLES = 120;
 
     window.handleWish = handleWish;
     window.revealAll = revealAll;
@@ -411,159 +320,19 @@
     window.joinRoom = joinRoom;
     window.startGame = startGame;
     window.closeC6Cutscene = closeC6Cutscene;
-    window.restartMatch = restartMatch;
-    window.exitMatchRoom = exitMatchRoom;
 
-    // 🔄 규칙 3: 무조건 인증(Auth)을 마친 후에 쿼리를 실행하도록 안전장치 가동!
-    window.onload = async function() {
+    window.onload = function() {
+        // 🔄 새로고침 완료 시 항상 이름 입력 모달이 대기하고 있도록 보장
         document.getElementById('nameModal').style.display = 'flex';
         document.getElementById('editNickInput').value = "로딩 중...";
         document.getElementById('btn1').disabled = true;
         document.getElementById('btn10').disabled = true;
-
-        // 성간 엔진 초기화
-        initStarfield();
-
-        try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (e) {
-            console.error("인증 처리 도중 오류 발생:", e);
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                syncUI();
-                renderArchiveFolders();
-                listenRankings(); // 인증 완료 후 명예의 전당 활성화
-            }
-        });
+        syncUI();
+        renderArchiveFolders(); // 과거의 추억 폴더 목록은 그대로 렌더링!
+        calculateMyRank();
     };
 
-    // 🌌 성간 파티클 엔진 핵심 비주얼 이펙트 구현
-    function initStarfield() {
-        canvas = document.getElementById('particleCanvas');
-        if (!canvas) return;
-        ctx = canvas.getContext('2d');
-        
-        resizeCanvas();
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-        });
-
-        // 초기 입자 생성
-        for (let i = 0; i < MAX_PARTICLES; i++) {
-            particles.push(createParticle(true));
-        }
-
-        requestAnimationFrame(updateStarfield);
-    }
-
-    function resizeCanvas() {
-        const container = document.getElementById('stage');
-        if (canvas && container) {
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-        }
-    }
-
-    function createParticle(randomizeY = false) {
-        return {
-            x: Math.random() * canvas.width,
-            y: randomizeY ? Math.random() * canvas.height : Math.random() * canvas.height,
-            z: Math.random() * canvas.width, // 깊이 축 대용
-            size: Math.random() * 1.8 + 0.2,
-            color: '#ffffff',
-            speed: Math.random() * 2 + 0.5
-        };
-    }
-
-    function updateStarfield() {
-        if (!ctx || !canvas) return;
-
-        // 투명 배경으로 지워 궤적 효과(Tail)를 유도
-        ctx.fillStyle = `rgba(5, 10, 21, ${particleSpeedMultiplier > 1 ? '0.25' : '0.45'})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        particles.forEach((p) => {
-            // 중심부(원점)로부터 바깥으로 확장하는 기원 웜홀 드라이브 연출
-            p.z -= p.speed * particleSpeedMultiplier;
-
-            if (p.z <= 0) {
-                p.z = canvas.width;
-                p.x = Math.random() * canvas.width;
-                p.y = Math.random() * canvas.height;
-            }
-
-            const k = 128.0 / p.z;
-            const px = (p.x - canvas.width / 2) * k + canvas.width / 2;
-            const py = (p.y - canvas.height / 2) * k + canvas.height / 2;
-
-            if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
-                const size = p.size * (1 - p.z / canvas.width) * 2;
-                
-                // 별의 컬러 모드 처리 (운명 에너지 침투)
-                let fillStyle = '#ffffff';
-                if (starColorMode === 'purple') {
-                    fillStyle = `hsla(280, 100%, 75%, ${Math.random() * 0.4 + 0.6})`;
-                } else if (starColorMode === 'gold') {
-                    fillStyle = `hsla(48, 100%, 60%, ${Math.random() * 0.4 + 0.6})`;
-                } else if (starColorMode === 'radiance') {
-                    fillStyle = `hsla(305, 100%, 70%, ${Math.random() * 0.4 + 0.6})`;
-                } else {
-                    fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.7})`;
-                }
-
-                ctx.beginPath();
-                ctx.arc(px, py, size, 0, Math.PI * 2);
-                ctx.fillStyle = fillStyle;
-                ctx.fill();
-
-                // 가속 시 라이트 트레일 추가 연출
-                if (particleSpeedMultiplier > 1) {
-                    ctx.beginPath();
-                    ctx.moveTo(px, py);
-                    const tailLength = particleSpeedMultiplier * 1.5;
-                    // 소멸 지점을 향해 선 드로잉
-                    const opx = (p.x - canvas.width / 2) * (128.0 / (p.z + tailLength)) + canvas.width / 2;
-                    const opy = (p.y - canvas.height / 2) * (128.0 / (p.z + tailLength)) + canvas.height / 2;
-                    ctx.lineTo(opx, opy);
-                    ctx.strokeStyle = fillStyle;
-                    ctx.lineWidth = size * 0.5;
-                    ctx.stroke();
-                }
-            }
-        });
-
-        requestAnimationFrame(updateStarfield);
-    }
-
-    // 파티클 워프 가속 트리거
-    function triggerWarpSpeed(maxRank, hasRad) {
-        particleSpeedMultiplier = 16; // 워프 가속
-        if (hasRad) starColorMode = 'radiance';
-        else if (maxRank === 5) starColorMode = 'gold';
-        else if (maxRank === 4) starColorMode = 'purple';
-        else starColorMode = 'normal';
-
-        // 3.5초 후 점진적 원상 복귀
-        setTimeout(() => {
-            const decelerate = setInterval(() => {
-                particleSpeedMultiplier -= 1;
-                if (particleSpeedMultiplier <= 1) {
-                    particleSpeedMultiplier = 1;
-                    starColorMode = 'normal';
-                    clearInterval(decelerate);
-                }
-            }, 60);
-        }, 3200);
-    }
-
-    // 🔔 커스텀 토스트 알림창 출력 함수
+    // 🔔 커스텀 토스트 알림창 출력 함수 (alert 방지용 우아한 인터페이스)
     function showToast(message) {
         const container = document.getElementById('toastContainer');
         if(!container) return;
@@ -575,12 +344,16 @@
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        }, 3000);
+    }
+
+    function saveToLocalStorage() {
+        // [중요] 현재 진행중인 게임 수치는 절대 저장하지 않음으로써 다음 새로고침 시 영구 초기화를 보증함!
     }
 
     function submitInitialName() {
         const input = document.getElementById('modalNameInput');
-        if(!input || !input.value.trim()) return showToast("시작할 이름을 알려줘야 해! ✍️");
+        if(!input || !input.value.trim()) return showToast("사용할 이름을 입력해 주세요! ✍️");
         myName = input.value.trim();
         document.getElementById('editNickInput').value = myName;
         document.getElementById('nameModal').style.display = 'none';
@@ -588,68 +361,65 @@
         document.getElementById('btn10').disabled = false;
         syncUI();
         renderArchiveFolders();
-        showToast(`티바트에 온 걸 환영해, ${myName}! 🌟`);
+        showToast(`어서와, ${myName}! 행운이 가득하길 바랄게! 🍀`);
     }
 
     function changeNickname() {
         const newName = document.getElementById('editNickInput').value.trim();
-        if(!newName) return showToast("공백 닉네임은 금지야! ❌");
+        if(!newName) return showToast("이름은 공백일 수 없습니다! ❌");
         myName = newName;
-        showToast("닉네임 변경 완료! 새로운 이름을 대결자들에게 알릴게! 💫");
+        showToast("닉네임이 성공적으로 변경되었습니다! 😉");
         syncMultiplayerStatus();
         calculateMyRank();
     }
 
-    // 🏆 규칙 1 & 규칙 2 준수한 실시간 랭킹 업로드
+    // 🏆 명예의 전당 갱신 처리 (동일 이름 중 '최고 기록'으로만 치환)
     async function checkAndUploadC6() {
         if(globalStats.pickupCount >= 6 && !isFinishedC6) {
             isFinishedC6 = true;
             playC6Cutscene();
-            saveCurrentGameToFolder(); // 완수된 데이터 로컬 폴더에 저장
 
-            if (!currentUser) return; // 인증 비동기 가드
+            // 이번 판이 무사히 풀돌로 끝났으니, 하나의 소중한 기록 파일(폴더)로 밀봉해서 브라우저 아카이브에 영구 저장!
+            saveCurrentGameToFolder();
 
             const myUsedGems = globalStats.totalPulls * 160;
             try {
-                // 규칙 2: 복잡한 Firestore 쿼리(where 등)는 인덱스 에러 방지를 위해 가급적 단일 리로드 후 인메모리 필터링
-                const snapshot = await getDocs(c6RankCollection);
-                let existingDoc = null;
-                snapshot.forEach((doc) => {
-                    if (doc.data().name === myName) {
-                        existingDoc = doc;
-                    }
-                });
+                // 1. 현재 입력한 닉네임과 똑같은 명예의 전당 기록이 있는지 서치
+                const q = query(collection(db, "c6_rankings"), where("name", "==", myName));
+                const querySnapshot = await getDocs(q);
 
-                if (existingDoc) {
-                    const existingGems = existingDoc.data().usedGems;
+                if (!querySnapshot.empty) {
+                    let existingDoc = querySnapshot.docs[0];
+                    let existingGems = existingDoc.data().usedGems;
+
+                    // 2. 만약 이미 기록이 있는데 이번에 원석을 "더 적게" 써서 운 좋게 깼다면 기존 기록 삭제 후 새 최고기록 등극!
                     if (myUsedGems < existingGems) {
                         await deleteDoc(existingDoc.ref);
-                        await addDoc(c6RankCollection, { 
+                        await addDoc(collection(db, "c6_rankings"), { 
                             name: myName, 
                             pulls: globalStats.totalPulls, 
                             usedGems: myUsedGems, 
                             timestamp: Date.now() 
                         });
-                        showToast("✨ 새로운 개인 최고 최단 뽑기 기록을 갱신해서 명예의 전당을 갈아치웠어! 🎉");
+                        showToast("🎉 축하해! 기존의 내 기록을 뛰어넘어 새로운 최단 기록을 명예의 전당에 세웠어!");
                     } else {
-                        showToast("돌파 완성! 하지만 기존 랭킹 기록이 더 빨라서 명예의 전당은 보존할게! ⚡");
+                        showToast("이번에도 멋진 도전이었어! 하지만 아쉽게도 내 기존 랭킹 기록보다는 원석을 더 썼네 😅");
                     }
                 } else {
-                    await addDoc(c6RankCollection, { 
+                    // 3. 기존에 등록된 기록이 없다면 최초 기록으로 바로 명예의 전당 박제!
+                    await addDoc(collection(db, "c6_rankings"), { 
                         name: myName, 
                         pulls: globalStats.totalPulls, 
                         usedGems: myUsedGems, 
                         timestamp: Date.now() 
                     });
-                    showToast("🎉 명예의 전당에 네 이름을 최초로 기록했어! 축하해! 🏆");
+                    showToast("🎉 명예의 전당에 첫 깃발을 꽂았어! 전당 리스트를 확인해봐!");
                 }
-            } catch (e) { 
-                console.error("명예의 전당 데이터 관리 도중 에러:", e); 
-            }
+            } catch (e) { console.error("명예의 전당 검증 중 데이터 통신 실패:", e); }
         }
     }
 
-    // 📁 한 세션의 모든 운명의 수레바퀴 기록을 폴더상자로 완벽 압축 저장
+    // 📁 이번 판의 뽑기 이력을 하나의 폴더 상자로 구성해서 로컬 아카이브에 보관하는 메커니즘
     function saveCurrentGameToFolder() {
         const totalWon = globalStats.totalPulls * COST_PER_PULL;
         const newFolder = {
@@ -660,22 +430,22 @@
             totalWon: totalWon,
             chickenCount: (totalWon / CHICKEN_PRICE).toFixed(1),
             date: new Date().toLocaleDateString(),
-            characters: [...savedArchive] 
+            characters: [...savedArchive] // 5성들 이력 캡처
         };
         
-        historyFolders.unshift(newFolder); 
+        historyFolders.unshift(newFolder); // 신규 폴더가 위로 가게 삽입
         localStorage.setItem('genshin_sim_folders', JSON.stringify(historyFolders));
         renderArchiveFolders();
     }
 
-    // 🗂️ 아카이브 영역에 폴더 디자인 구성 렌더링
+    // 🗺️ 하단 도감 그리드 영역을 이쁘장한 '플레이 폴더' 리스트 뷰형태로 복원 및 렌더링
     function renderArchiveFolders() {
         const grid = document.getElementById('archiveGrid');
         if(!grid) return;
         grid.innerHTML = '';
 
         if(historyFolders.length === 0) {
-            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 달성한 C6 기록 폴더가 없어. 열심히 뽑아보자! 📦</div>`;
+            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요! 🎁</div>`;
             return;
         }
 
@@ -685,8 +455,8 @@
 
             let headerHtml = `
                 <div class="folder-header">
-                    <span class="folder-title">📁 뽑기 기록 폴더 #${historyFolders.length - idx} (${folder.playerName})</span>
-                    <span class="folder-meta">📅 완료: ${folder.date} | 📊 ${folder.totalPulls}뽑 (₩${folder.totalWon.toLocaleString()})</span>
+                    <span class="folder-title">📁 플레이 기록 폴더 #${historyFolders.length - idx} (${folder.playerName})</span>
+                    <span class="folder-meta">📅 달성일: ${folder.date} | 📊 결과: <b>${folder.totalPulls}</b>뽑 (₩${folder.totalWon.toLocaleString()})</span>
                 </div>
             `;
 
@@ -715,46 +485,35 @@
     }
 
     async function calculateMyRank() {
-        if(globalStats.pickupCount < 6 || !currentUser) {
+        if(globalStats.pickupCount < 6) {
             document.getElementById('myRealRank').innerText = "C6 미달성";
             return;
         }
         const myUsedGems = globalStats.totalPulls * 160;
-        try {
-            const snapshot = await getDocs(c6RankCollection);
-            let rank = 1;
-            snapshot.forEach((doc) => {
-                if(doc.data().usedGems < myUsedGems) {
-                    rank++;
-                }
-            });
-            document.getElementById('myRealRank').innerText = rank + " 위";
-        } catch (e) {
-            console.error(e);
-        }
+        const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"));
+        const snapshot = await getDocs(q);
+        let rank = 1;
+        let found = false;
+        snapshot.forEach((doc) => {
+            if(!found && doc.data().usedGems < myUsedGems) {
+                rank++;
+            }
+        });
+        document.getElementById('myRealRank').innerText = rank + " 위";
     }
 
-    // 🏆 규칙 2: 복잡한 Firestore 정렬 대신 단순 획득 후 인메모리 수동 정렬
     function listenRankings() {
-        if (!currentUser) return;
-        onSnapshot(c6RankCollection, (snapshot) => {
+        const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
+        onSnapshot(q, (snapshot) => {
             const rankList = document.getElementById('rankList');
             if(!rankList) return;
             rankList.innerHTML = '';
-            
-            let dataArray = [];
-            snapshot.forEach((doc) => {
-                dataArray.push(doc.data());
-            });
-
-            // 원석 사용량(usedGems) 적은 순서대로 정렬
-            dataArray.sort((a, b) => a.usedGems - b.usedGems);
-
             let rank = 1;
-            let seenNames = new Set();
             
-            dataArray.forEach((data) => {
-                if(!seenNames.has(data.name) && rank <= 50){
+            let seenNames = new Set();
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                if(!seenNames.has(data.name)){
                     seenNames.add(data.name);
                     const item = document.createElement('div');
                     item.className = 'room-user-item';
@@ -763,324 +522,88 @@
                     rank++;
                 }
             });
-            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">영예로운 최초의 풀돌 도전을 기다리고 있어! ☄️</div>`;
+            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요! 🚀</div>`;
             calculateMyRank();
-        }, (error) => {
-            console.error("Firestore 리스너 에러 방지:", error);
         });
     }
+    listenRankings();
 
-    // ⚔️ 멀티플레이어 매치 생성
     function createRoom() {
-        if(!myName) return showToast("대결 전에 닉네임을 먼저 설정해줘! 👤");
+        if(!myName) return showToast("이름을 먼저 입력해주셔야 방을 생성할 수 있어! 👤");
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoomId = roomId; isHost = true; isMultiplayerMode = true; isGameStarted = false;
-        opponentConsts = {}; // 이전 돌파 기록 비우기
-        
         set(ref(rdb, `rooms/${roomId}/info`), { host: myName, status: "waiting" });
         document.getElementById('hostControlArea').style.display = 'block';
         document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
         
         const overlay = document.getElementById('multiNoticeOverlay');
         if(overlay) {
-            document.getElementById('multiNoticeText').innerText = "다른 경쟁자들의 접속을 유도해봐!\n방장이 [대결 시작하기]를 누르면 운명의 주사위가 굴러갑니다.";
+            document.getElementById('multiNoticeText').innerText = "다른 대결 상대를 기다리고 있습니다.\n방장이 [대결 시작하기]를 누르면 대결이 시작됩니다.";
             overlay.style.display = 'flex';
         }
         joinRoomSequence(roomId);
     }
 
-    // ⚔️ 멀티플레이어 매치 참여
     function joinRoom() {
         const codeInput = document.getElementById('roomCodeInput');
-        if(!codeInput || !codeInput.value.trim()) return showToast("올바른 고유 방 번호를 작성해줘! 🔢");
+        if(!codeInput || !codeInput.value.trim()) return showToast("방 코드를 바르게 기입해줘! 🔢");
         currentRoomId = codeInput.value.trim(); isHost = false; isMultiplayerMode = true; isGameStarted = false;
-        opponentConsts = {};
-
         document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
         
         const overlay = document.getElementById('multiNoticeOverlay');
         if(overlay) {
-            document.getElementById('multiNoticeText').innerText = "방장이 영광스러운 전투를 시작할 때까지 전열을 정비하자...";
+            document.getElementById('multiNoticeText').innerText = "방장이 대결을 시작할 때까지 대기 중입니다...";
             overlay.style.display = 'flex';
         }
         joinRoomSequence(currentRoomId);
     }
 
-    // ⚔️ 실시간 대결 방 데이터 감시 및 핸들러
     function joinRoomSequence(roomId) {
-        document.getElementById('activeRoomInfo').innerText = `현재 참여 중인 방 코드: ${roomId}`;
+        document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
         document.getElementById('btnCreateRoom').disabled = document.getElementById('btnJoinRoom').disabled = document.getElementById('roomCodeInput').disabled = true;
 
         const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
-        set(myStatusRef, { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, isFinished: false, lastUpdate: Date.now() });
+        set(myStatusRef, { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() });
         onDisconnect(myStatusRef).remove();
-
-        // 방 정보 감시 리스너
         onValue(ref(rdb, `rooms/${roomId}/info`), (snapshot) => {
             const info = snapshot.val(); if(!info) return;
-            
             if(info.status === "playing" && !isGameStarted) {
-                // 게임 스타트!
                 isGameStarted = true;
-                document.getElementById('gameStatusAlert').innerText = "⚔️ 결투 시작! 누구보다 빠르게 C6를 쟁취해라! ⚔️";
+                document.getElementById('gameStatusAlert').innerText = "⚔️ 실시간 대결 진행 중! ⚔️";
                 document.getElementById('gameStatusAlert').style.color = "crimson";
                 document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false;
                 document.getElementById('multiNoticeOverlay').style.display = 'none';
-                document.getElementById('podiumModal').style.display = 'none';
-                document.getElementById('podiumModal').style.opacity = '0';
-            } 
-            else if(info.status === "finished") {
-                // 매치 완료 -> 시상대 팝업!
-                showMatchPodium(roomId);
-            }
-            else if(info.status === "waiting") {
-                // 대기 상태로 재설정
-                isGameStarted = false;
-                document.getElementById('gameStatusAlert').innerText = "⚔️ 경쟁자 대기 중... ⚔️";
-                document.getElementById('gameStatusAlert').style.color = "#5bc0de";
-                document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
-                document.getElementById('podiumModal').style.display = 'none';
-                document.getElementById('podiumModal').style.opacity = '0';
             }
         });
-
-        // 방 안의 실시간 유저 동기화 리스너
         onValue(ref(rdb, `rooms/${roomId}/users`), (snapshot) => {
-            const users = snapshot.val(); 
-            const listContainer = document.getElementById('roomUserList');
-            if(!listContainer || !users) return; 
-            
-            listContainer.innerHTML = '';
-            let allUsersFinished = true;
-            let userCount = 0;
-
+            const users = snapshot.val(); const listContainer = document.getElementById('roomUserList');
+            if(!listContainer || !users) return; listContainer.innerHTML = '';
             Object.keys(users).forEach(key => {
-                const u = users[key]; 
-                userCount++;
-                const item = document.createElement('div');
+                const u = users[key]; const item = document.createElement('div');
                 item.className = 'room-user-item';
-                
-                let checkBadge = u.isFinished ? "👑 C6 완료!" : `[${u.constLevel}]`;
-                item.innerHTML = `<span>👤 ${u.name} <b style="color:var(--gold)">${checkBadge}</b></span><span>${u.pulls}뽑 <b style="color:var(--blue)">(${u.pity5}스택)</b></span>`;
+                item.innerHTML = `<span>👤 ${u.name} <b style="color:var(--gold)">[${u.constLevel}]</b></span><span>${u.pulls}뽑 <b style="color:var(--blue)">(${u.pity5}스택)</b></span>`;
                 listContainer.appendChild(item);
-
-                // 경쟁자가 6돌을 아직 완료하지 못했다면 대결 완료가 아님!
-                if(!u.isFinished) {
-                    allUsersFinished = false;
-                }
-
-                // 🔔 실시간 브로드캐스트 돌파 알림 감지 시스템
-                if (u.name !== myName) {
-                    if (opponentConsts[u.name] !== undefined && opponentConsts[u.name] !== u.constLevel) {
-                        if (u.constLevel === "풀돌") {
-                            showToast(`🔥 경보! 경쟁자 [${u.name}]님이 기어이 C6(풀돌)을 먼저 쟁취했어!!! 😱`);
-                        } else if (u.constLevel !== "미보유") {
-                            showToast(`⚡ 알림: 경쟁자 [${u.name}]님이 운명의 자리 [${u.constLevel}] 단계를 돌파 완료!`);
-                        }
-                    }
-                    opponentConsts[u.name] = u.constLevel;
-                }
             });
-
-            // 모든 유저가 돌파를 완료했을 때 방장이 최종 승부 종료 트리거 전달 (최소 2인 이상일 때 경쟁 성립 가능하도록)
-            if (isHost && allUsersFinished && userCount >= 1 && isGameStarted) {
-                update(ref(rdb, `rooms/${roomId}/info`), { status: "finished" });
-            }
         });
     }
 
-    function startGame() { 
-        if(isHost && currentRoomId) {
-            update(ref(rdb, `rooms/${currentRoomId}/info`), { status: "playing" }); 
-        }
-    }
-
-    function getConstLabel() { 
-        return globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount); 
-    }
-
-    function syncMultiplayerStatus() { 
-        if (!isMultiplayerMode || !currentRoomId) return; 
-        update(ref(rdb, `rooms/${currentRoomId}/users/${myName}`), { 
-            name: myName, 
-            pulls: globalStats.totalPulls, 
-            constLevel: getConstLabel(), 
-            pity5: globalStats.pity5, 
-            isFinished: globalStats.pickupCount >= 6,
-            lastUpdate: Date.now() 
-        }); 
-    }
-
-    // 🏆 대결 종료 시상대 시각화 함수
-    function showMatchPodium(roomId) {
-        const podiumModal = document.getElementById('podiumModal');
-        const podiumList = document.getElementById('podiumList');
-        const btnRestart = document.getElementById('btnRestartMatch');
-        
-        if (!podiumModal || !podiumList) return;
-
-        // 호스트인 경우에만 '다시 대결하기' 제어 버튼 활성화
-        if (isHost) {
-            btnRestart.style.display = 'inline-block';
-        } else {
-            btnRestart.style.display = 'none';
-        }
-
-        onValue(ref(rdb, `rooms/${roomId}/users`), (snapshot) => {
-            const users = snapshot.val();
-            if(!users) return;
-
-            podiumList.innerHTML = '';
-            let competitors = [];
-            Object.keys(users).forEach(key => {
-                competitors.push(users[key]);
-            });
-
-            // 1. 뽑기 횟수 오름차순으로 정렬 (가장 적게 뽑아서 C6 달성한 유저가 명예의 1위!)
-            competitors.sort((a, b) => a.pulls - b.pulls);
-
-            competitors.forEach((c, idx) => {
-                const item = document.createElement('div');
-                item.className = `podium-item ${idx === 0 ? 'first' : ''}`;
-                
-                let crown = "";
-                if (idx === 0) crown = "🥇 [천하제일 기원장인] 👑 ";
-                else if (idx === 1) crown = "🥈 [실버 여행자] ";
-                else if (idx === 2) crown = "🥉 [브론즈 여행자] ";
-                else crown = `🏅 ${idx + 1}등. `;
-
-                item.innerHTML = `
-                    <span><span class="rank-medal">${crown}</span> ${c.name}</span>
-                    <span style="color: var(--gold);">${c.pulls}뽑 소모 (${(c.pulls * 160).toLocaleString()}원석)</span>
-                `;
-                podiumList.appendChild(item);
-            });
-
-            podiumModal.style.display = 'flex';
-            setTimeout(() => podiumModal.style.opacity = '1', 50);
-        }, { onlyOnce: true }); // 일회성 획득 처리
-    }
-
-    // 🔄 다시 매치 진행 (방 내 인원 그대로 유지한 채 뽑기 수치와 운명 전체 리셋)
-    function restartMatch() {
-        if (!isHost || !currentRoomId) return;
-
-        // 1. 먼저 방의 상태를 waiting으로 돌려 제어권 차단
-        update(ref(rdb, `rooms/${currentRoomId}/info`), { status: "waiting" });
-
-        // 2. 방 내에 접속해있던 모든 경쟁자들의 뽑기 데이터 강제 청소
-        onValue(ref(rdb, `rooms/${currentRoomId}/users`), (snapshot) => {
-            const users = snapshot.val();
-            if(!users) return;
-
-            Object.keys(users).forEach(userName => {
-                update(ref(rdb, `rooms/${currentRoomId}/users/${userName}`), {
-                    pulls: 0,
-                    constLevel: "미보유",
-                    pity5: 0,
-                    isFinished: false,
-                    lastUpdate: Date.now()
-                });
-            });
-        }, { onlyOnce: true });
-
-        // 3. 내 로컬 세션 데이터 강제 완전 초기화
-        globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-        savedArchive = [];
-        isFinishedC6 = false;
-        
-        // 4. 리셋된 내 전열을 경쟁 룸에 최신화
-        syncMultiplayerStatus();
-        syncUI();
-        
-        // 획득 이력 리스트 비우기
-        const list = document.getElementById('historyList');
-        if(list) list.innerHTML = '';
-
-        // 5. 방장이 즉시 신속하게 플레이 상태로 재전개!
-        setTimeout(() => {
-            update(ref(rdb, `rooms/${currentRoomId}/info`), { status: "playing" });
-            showToast("💫 방장의 명령으로 운명의 리셋 완료! 다시 격렬하게 대결을 전개하자! ⚔️");
-        }, 1200);
-    }
-
-    // 🚪 경쟁 룸 완전히 박차고 싱글모드로 전환
-    function exitMatchRoom() {
-        if (currentRoomId) {
-            // Realtime Database에서 나의 발자취 삭제
-            remove(ref(rdb, `rooms/${currentRoomId}/users/${myName}`));
-            
-            // 만약 내가 호스트였다면 폭파하거나 위임하는 간이 가이드
-            if (isHost) {
-                remove(ref(rdb, `rooms/${currentRoomId}/info`));
-            }
-        }
-
-        // 룸 컨트롤 UI 초기화
-        currentRoomId = null;
-        isHost = false;
-        isMultiplayerMode = false;
-        isGameStarted = true;
-        opponentConsts = {};
-
-        // 게임 기본 상태 리셋
-        globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-        savedArchive = [];
-        isFinishedC6 = false;
-
-        document.getElementById('btnCreateRoom').disabled = false;
-        document.getElementById('btnJoinRoom').disabled = false;
-        document.getElementById('roomCodeInput').disabled = false;
-        document.getElementById('roomCodeInput').value = '';
-        document.getElementById('activeRoomInfo').innerText = '';
-        document.getElementById('gameStatusAlert').innerText = "싱글 플레이어 모드";
-        document.getElementById('gameStatusAlert').style.color = "#5bc0de";
-        document.getElementById('hostControlArea').style.display = 'none';
-        document.getElementById('roomUserList').innerHTML = '';
-        document.getElementById('historyList').innerHTML = '';
-        document.getElementById('btn1').disabled = false;
-        document.getElementById('btn10').disabled = false;
-        
-        // 시상대 숨기기
-        const podiumModal = document.getElementById('podiumModal');
-        podiumModal.style.opacity = '0';
-        setTimeout(() => podiumModal.style.display = 'none', 500);
-
-        syncUI();
-        showToast("🚪 대결의 전장을 탈출하여 평화로운 개인 로비로 안착했어!");
-    }
+    function startGame() { if(isHost && currentRoomId) update(ref(rdb, `rooms/${currentRoomId}/info`), { status: "playing" }); }
+    function getConstLabel() { return globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount); }
+    function syncMultiplayerStatus() { if (!isMultiplayerMode || !currentRoomId) return; update(ref(rdb, `rooms/${currentRoomId}/users/${myName}`), { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() }); }
 
     function playC6Cutscene() {
         const overlay = document.getElementById('c6Cutscene');
         overlay.style.display = 'flex'; setTimeout(() => overlay.style.opacity = '1', 50);
-        
-        // 성간 파티클을 6돌 순간 일시적으로 황금빛 원형 가속으로 트리거
-        starColorMode = 'gold';
-        particleSpeedMultiplier = 8;
-
         for(let i=1; i<=6; i++) {
             setTimeout(() => {
                 document.getElementById(`star${i}`).classList.add('active');
                 document.getElementById(`line${i}`).classList.add('draw');
             }, i * 650);
         }
-        setTimeout(() => { 
-            document.getElementById('c6Title').style.opacity = '1'; 
-            document.getElementById('c6Title').style.transform = 'translateY(0)'; 
-            document.getElementById('c6Title').style.transition = 'all 0.8s ease'; 
-        }, 4200);
-        setTimeout(() => { 
-            document.getElementById('c6Subtitle').style.opacity = '1'; 
-            document.getElementById('c6CloseBtn').style.opacity = '1'; 
-            particleSpeedMultiplier = 1;
-            starColorMode = 'normal';
-        }, 4800);
+        setTimeout(() => { document.getElementById('c6Title').style.opacity = '1'; document.getElementById('c6Title').style.transform = 'translateY(0)'; document.getElementById('c6Title').style.transition = 'all 0.8s ease'; }, 4200);
+        setTimeout(() => { document.getElementById('c6Subtitle').style.opacity = '1'; document.getElementById('c6CloseBtn').style.opacity = '1'; }, 4800);
     }
-    function closeC6Cutscene() { 
-        const overlay = document.getElementById('c6Cutscene'); 
-        overlay.style.opacity = '0'; 
-        setTimeout(() => overlay.style.display = 'none', 800); 
-    }
+    function closeC6Cutscene() { const overlay = document.getElementById('c6Cutscene'); overlay.style.opacity = '0'; setTimeout(() => overlay.style.display = 'none', 800); }
 
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
@@ -1091,22 +614,9 @@
         Array.from(stage.querySelectorAll('.card')).forEach(c => c.remove());
         effectLayer.innerHTML = ''; btn1.disabled = btn10.disabled = true;
 
-        // 스테이지 글리치 상태 해제
-        stage.classList.remove('stage-radiance-glitch');
-
         const results = Array.from({length: count}, calculateOne);
         const maxRank = Math.max(...results.map(r => r.rank));
         const hasRad = results.some(r => r.isRadiance);
-
-        // 🌌 별빛 가속 엔진 작동!
-        triggerWarpSpeed(maxRank, hasRad);
-
-        // 5성 별빛 포착일 경우 스테이지 네온 글리치 강제 발동
-        if (hasRad) {
-            setTimeout(() => {
-                stage.classList.add('stage-radiance-glitch');
-            }, 1500);
-        }
 
         const star = document.createElement('div');
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
@@ -1127,7 +637,6 @@
         setTimeout(() => showCards(results, count), (hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank]) + 100);
     }
 
-    // 초월 기원 플래시 연출
     function triggerFlash(color, opacity) {
         const flash = document.getElementById('flashOverlay');
         if(!flash) return;
