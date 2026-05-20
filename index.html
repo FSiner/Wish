@@ -83,19 +83,67 @@
         #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
         /* 슈팅 스타 이펙트 */
-        .shooting-star { width: 20px; height: 600px; position: absolute; top: -700px; left: -10%; border-radius: 100px; opacity: 0; transform: rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--blue)); box-shadow: 0 0 40px var(--blue); z-index: 200; }
-        .star-3 { animation: fall-3 1.2s linear forwards; }
-        .star-4 { animation: fall-4 3.0s ease-in-out forwards; }
-        .star-5 { animation: fall-5 3.8s ease-in-out forwards; }
-        .star-rad { animation: fall-rad 5.2s ease-in-out forwards; }
+        /* 🌠 수정된 원신풍 서스펜스 낙하 이펙트 스타일 */
+        .shooting-star { 
+            width: 20px; height: 600px; position: absolute; 
+            top: -700px; left: -10%; border-radius: 100px; 
+            opacity: 0; transform: rotate(-45deg);
+            /* 처음에는 무조건 흰색/푸른색(3성) 빛으로 시작 */
+            background: linear-gradient(to bottom, transparent, #fff, #99ccff);
+            box-shadow: 0 0 40px #4099ff;
+            z-index: 200;
+        }
 
-        @keyframes fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 15% { opacity:1; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes fall-4 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); } 15% { opacity:1; } 40% { transform: translate(450px,450px) rotate(-45deg); } 50% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); filter: brightness(2); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--purple)); } }
-        @keyframes fall-5 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); } 15% { opacity:1; } 40% { transform: translate(450px,450px) rotate(-45deg); } 50% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 300px 50px #fff; } 60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 30px var(--gold); filter: brightness(2); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--gold)); } }
-        @keyframes fall-rad { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 10% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); } 55% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 300px #fff; } 70% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 50px var(--radiance); filter: brightness(2); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); } }
+        /* 등급별로 애니메이션 적용 (모두 동일한 타이밍에 작동하되 중간 변환 컬러만 다름) */
+        .star-3 { animation: genshin-fall-3 2.0s ease-in-out forwards; }
+        .star-4 { animation: genshin-fall-4 3.5s ease-in-out forwards; }
+        .star-5 { animation: genshin-fall-5 4.2s ease-in-out forwards; }
+        .star-rad { animation: genshin-fall-rad 5.5s ease-in-out forwards; }
 
-        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
+        /* 🟦 3성: 멈춤 없이 깔끔하게 일반 속도로 낙하 */
+        @keyframes genshin-fall-3 {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; }
+            15% { opacity:1; }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; }
+        }
 
+        /* 🟪 4성: 흰색으로 낙하 ➡️ 중앙 정지 후 보라색 각성 ➡️ 초고속 최종 낙하 */
+        @keyframes genshin-fall-4 {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; }
+            15% { opacity:1; }
+            /* 35% ~ 55% 구간에서 화면 중앙 근처에 일시적으로 멈춤 (서스펜스) */
+            35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; filter: brightness(1); }
+            50% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 200px 30px #fff; filter: brightness(2); }
+            /* 멈춘 상태에서 보라색으로 빛이 반전/변환됨 */
+            60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); filter: brightness(1.2); }
+            /* 대기 후 목표지점으로 강렬하게 돌진 */
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 120px var(--purple); }
+        }
+
+        /* 🟨 5성: 흰색으로 낙하 ➡️ 중앙 정지 후 황금색 대폭발 각성 ➡️ 최종 낙하 */
+        @keyframes genshin-fall-5 {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; }
+            15% { opacity:1; }
+            /* 중앙 정지 구간 */
+            35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; filter: brightness(1); }
+            50% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 350px 60px #fff; filter: brightness(2.5); }
+            /* 황금색으로 화려하게 각성 */
+            60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 40px var(--gold); filter: brightness(1.5); }
+            75% { transform: translate(500px,500px) rotate(-45deg); filter: brightness(1.2); }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 200px var(--gold); }
+        }
+
+        /* 🔮 별빛포착(Pink): 흰색으로 낙하 ➡️ 중앙 정지 후 네온 핑크빛 대폭발 각성 ➡️ 최종 낙하 */
+        @keyframes genshin-fall-rad {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; }
+            15% { opacity:1; }
+            /* 중앙 정지 구간 */
+            35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; filter: brightness(1); }
+            52% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 400px 80px #fff; filter: brightness(2.5); }
+            /* 별빛포착 시그니처 핑크빛으로 강력한 각성 */
+            65% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 60px var(--radiance); filter: brightness(1.5); }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 250px var(--radiance); }
+        }
         /* 카드 UI */
         .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
         .card.active { opacity: 1; transition: 0.15s ease-out; }
@@ -463,16 +511,19 @@
         const hasRad = results.some(r => r.isRadiance);
 
         const star = document.createElement('div');
+        // 변환 전에는 클래스를 공유하되 고유 애니메이션 타이밍 지정
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
         effectLayer.appendChild(star);
 
+        // 💥 변환 연출 시점(대폭발 임팩트)에 맞춰 플래시 효과 발동 타이밍 최적화
         if (maxRank === 4) {
-            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1300);
+            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1750); // 멈춘 시점에 보라색 플래시
         } else if (maxRank === 5 || hasRad) {
-            setTimeout(() => triggerFlash('#ffffff', 0.7), 1700);
+            setTimeout(() => triggerFlash('#ffffff', 0.8), 2100); // 황금색/핑크색 각성 시 백색 폭발 플래시
         }
 
-        const animTimes = { 'star-3': 1200, 'star-4': 3000, 'star-5': 3800, 'star-rad': 5200 };
+        // 전체 운석 애니메이션이 모두 끝난 후 카드가 펼쳐지도록 딜레이 조정
+        const animTimes = { 'star-3': 2000, 'star-4': 3500, 'star-5': 4200, 'star-rad': 5500 };
         const totalDuration = hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank];
 
         setTimeout(() => showCards(results, count), totalDuration + 100);
