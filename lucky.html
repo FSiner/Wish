@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>기원</title>
+    <style>
+        :root { 
+            --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
+            --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
+        }
+        body { background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; height: 100vh; overflow: hidden; }
+        
+        .main-layout { display: flex; width: 98%; max-width: 1600px; height: 92vh; gap: 20px; z-index: 10; }
+        .container { flex: 3; display: flex; flex-direction: column; position: relative; }
+        .side-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #333; border-radius: 15px; padding: 15px; overflow: hidden; }
+        .history-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; height: 450px; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
+        .stat { background: rgba(26, 29, 40, 0.8); padding: 10px; border-radius: 12px; border: 1px solid #444; text-align: center; }
+        .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 3px; }
+        .stat b { font-size: 1.1em; color: var(--gold); }
+
+        .wish-stage { 
+            position: relative; flex-grow: 1; 
+            background: radial-gradient(circle at center, #1c2b3d 0%, #050a15 100%); 
+            border-radius: 20px; display: flex; justify-content: center; align-items: center; 
+            gap: 8px; padding: 15px; border: 1px solid #2a3a50; overflow: hidden; 
+        }
+        
+        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        
+        /* ☄️ 유성 베이스: 회색조 제거 및 고채도 설정 */
+        .shooting-star { 
+            width: 20px; height: 600px; position: absolute; 
+            top: -700px; left: -10%; border-radius: 100px; 
+            opacity: 0; transform: rotate(-45deg);
+            background: linear-gradient(to bottom, transparent, #fff, var(--blue));
+            box-shadow: 0 0 40px var(--blue);
+            z-index: 200;
+        }
+
+        /* 애니메이션 제어 */
+        .star-3 { animation: fall-3 1.2s linear forwards; }
+        .star-4 { animation: fall-4 3.0s ease-in-out forwards; }
+        .star-5 { animation: fall-5 3.8s ease-in-out forwards; }
+        .star-rad { animation: fall-rad 5.2s ease-in-out forwards; }
+
+        /* 3성: 블루 */
+        @keyframes fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 15% { opacity:1; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+
+        /* 4성: 변환 시점에만 번쩍! 이후 끝까지 보라색 유지 */
+        @keyframes fall-4 {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
+            15% { opacity:1; }
+            40% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
+            50% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); filter: brightness(2); }
+            60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); filter: brightness(1.2); }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 120px var(--purple); }
+        }
+
+        /* 5성: 변환 시점에 백금색 섬광! 이후 황금색 풀파워 유지 */
+        @keyframes fall-5 {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
+            15% { opacity:1; }
+            40% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
+            /* 💥 임팩트 지점: 흰색 섬광과 함께 황금색으로 진화 */
+            50% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 300px 50px #fff; }
+            60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 30px var(--gold); filter: brightness(2); }
+            75% { transform: translate(500px,500px) rotate(-45deg); filter: brightness(1.3); }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 200px var(--gold); }
+        }
+
+        /* 별빛포착: 2단 변신 */
+        @keyframes fall-rad {
+            0% { transform: translate(0,0) rotate(-45deg); opacity:0; }
+            10% { opacity:1; }
+            35% { transform: translate(450px,450px) rotate(-45deg); background: var(--gold); }
+            55% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 300px #fff; }
+            70% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 50px var(--radiance); filter: brightness(2); }
+            100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); }
+        }
+
+        /* 섬광 레이어 */
+        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
+
+        /* 카드 UI */
+        .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
+        .card.active { opacity: 1; transition: 0.15s ease-out; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.25s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-back { background: #1e2230; }
+        .card-front { transform: rotateY(180deg); color: #000; font-weight: bold; text-align: center; display: flex; flex-direction: column; justify-content: center; font-size: 0.8em; }
+        .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 20px #ffcc00; }
+        .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 30px #ff4ef0; }
+        .res-4 { background: linear-gradient(145deg, #bf40ff, #fff); }
+        .res-3 { background: #3d4a5d; color: white; }
+
+        .controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        button { padding: 12px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); }
+        .btn-skip { background: #333; color: white; display: none; }
+    </style>
+</head>
+<body>
+<div id="flashOverlay" class="flash-overlay"></div>
+
+<div class="main-layout">
+    <div class="container">
+        <div class="dashboard">
+            <div class="stat"><span>현재 스택</span><b id="dispPity">0</b></div>
+            <div class="stat"><span>천장 여부</span><b id="dispGuaranteed">반천장</b></div>
+            <div class="stat"><span>누적 원석</span><b id="dispGems">0</b></div>
+            <div class="stat"><span>누적 결제액</span><b id="dispWon">₩ 0</b></div>
+            <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0 마리</b></div>
+        </div>
+        <div id="stage" class="wish-stage"><div id="effect-layer"></div></div>
+        <div class="controls">
+            <button id="btn1" onclick="handleWish(1)">1회 기원</button>
+            <button id="btn10" onclick="handleWish(10)">10회 기원</button>
+            <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
+        </div>
+    </div>
+    <div class="side-panel">
+        <div class="panel-box">
+            <h4 style="margin:0 0 10px 0; color:var(--gold);">📊 기원 분석</h4>
+            <div style="font-size:0.85em; display:flex; flex-direction:column; gap:5px;">
+                <div>보유 돌파: <b id="dispConst" style="color:var(--radiance)">미보유</b></div>
+                <div>평균 스택: <b id="anaAvg">0</b></div>
+            </div>
+        </div>
+        <div class="panel-box" style="flex-grow:1;">
+            <h4 style="margin:0 0 10px 0; border-bottom:1px solid #444;">📜 획득 기록</h4>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
+    const COST_PER_PULL = 2410;
+    const CHICKEN_PRICE = 20000;
+
+    function handleWish(count) {
+        const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer'), flash = document.getElementById('flashOverlay');
+        const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
+        
+        Array.from(stage.querySelectorAll('.card')).forEach(c => c.remove());
+        effectLayer.innerHTML = '';
+        btn1.disabled = btn10.disabled = true;
+
+        const results = Array.from({length: count}, calculateOne);
+        const maxRank = Math.max(...results.map(r => r.rank));
+        const hasRad = results.some(r => r.isRadiance);
+
+        const star = document.createElement('div');
+        star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
+        effectLayer.appendChild(star);
+
+        // 💥 변환 타이밍에 섬광 터뜨리기 (버튼 누를 때가 아니라 중간 멈춤 시점)
+        if (maxRank === 4) {
+            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1300); // 4성은 연보라 섬광
+        } else if (maxRank === 5 || hasRad) {
+            setTimeout(() => triggerFlash('#ffffff', 0.7), 1700); // 5성은 강렬한 백색 섬광
+        }
+
+        const animTimes = { 'star-3': 1200, 'star-4': 3000, 'star-5': 3800, 'star-rad': 5200 };
+        const totalDuration = hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank];
+
+        setTimeout(() => showCards(results, count), totalDuration + 100);
+    }
+
+    function triggerFlash(color, opacity) {
+        const flash = document.getElementById('flashOverlay');
+        flash.style.background = color;
+        flash.style.opacity = opacity;
+        flash.style.transition = 'none';
+        setTimeout(() => {
+            flash.style.transition = 'opacity 0.6s ease-out';
+            flash.style.opacity = 0;
+        }, 50);
+    }
+
+    function calculateOne() {
+        let res = { rank: 3, name: "3성 무기", isRadiance: false, stack: 0, isPickup: false, constLevel: "" };
+        let chance = 0.6 + (globalStats.pity5 >= 74 ? (globalStats.pity5 - 73) * 6 : 0);
+        globalStats.pity5++; globalStats.pity4++;
+        if (Math.random() * 100 < chance || globalStats.pity5 >= 90) {
+            res.rank = 5; res.stack = globalStats.pity5;
+            let win = false;
+            if (globalStats.isGuaranteed) { win = true; globalStats.isGuaranteed = false; }
+            else {
+                let radChance = (globalStats.radianceStack === 0) ? 5 : (globalStats.radianceStack === 1 ? 10 : 100);
+                if (Math.random() * 100 < 50) win = true;
+                else if (Math.random() * 100 < radChance) { win = true; res.isRadiance = true; }
+                else { win = false; globalStats.isGuaranteed = true; globalStats.radianceStack++; }
+            }
+            res.isPickup = win;
+            if (win) { globalStats.pickupCount++; res.constLevel = globalStats.pickupCount > 6 ? "풀돌" : "C" + globalStats.pickupCount; }
+            res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
+            globalStats.pity5 = 0;
+        } else if (Math.random() * 100 < 5.1 || globalStats.pity4 >= 10) {
+            res.rank = 4; res.name = "4성 캐릭터"; globalStats.pity4 = 0;
+        }
+        return res;
+    }
+
+    function showCards(results, count) {
+        const stage = document.getElementById('stage');
+        document.getElementById('btnSkip').style.display = 'block';
+        results.forEach((res, i) => {
+            const card = document.createElement('div');
+            card.className = `card`;
+            if(count === 1) card.style.maxWidth = "200px";
+            card.innerHTML = `<div class="card-inner">
+                <div class="card-back" onclick="flipCard(this, ${JSON.stringify(res).replace(/"/g, '&quot;')})"></div>
+                <div class="card-front res-${res.isRadiance ? 'rad' : res.rank}">
+                    <div style="font-size:0.6em;">${'✦'.repeat(res.rank)}</div>
+                    <div>${res.name}</div>
+                    ${res.isPickup ? `<div class="const-badge" style="font-size:0.7em; margin-top:5px; color:#d32f2f; background:rgba(0,0,0,0.1); border-radius:10px; padding:2px 5px; display:inline-block;">${res.constLevel}</div>` : ''}
+                </div>
+            </div>`;
+            stage.appendChild(card);
+            setTimeout(() => card.classList.add('active'), i * 30);
+        });
+    }
+
+    function flipCard(el, res) {
+        const card = el.closest('.card');
+        if(card.classList.contains('flipped')) return;
+        card.classList.add('flipped');
+        globalStats.totalPulls++;
+        if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
+        syncUI();
+        checkDone();
+    }
+
+    function syncUI() {
+        const totalWon = globalStats.totalPulls * COST_PER_PULL;
+        document.getElementById('dispPity').innerText = globalStats.pity5;
+        document.getElementById('dispGuaranteed').innerText = globalStats.isGuaranteed ? "확정권" : "반천장";
+        document.getElementById('dispGems').innerText = (globalStats.totalPulls * 160).toLocaleString();
+        document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
+        document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
+        document.getElementById('dispConst').innerText = globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount > 6 ? "풀돌" : "C"+globalStats.pickupCount);
+        if(globalStats.results5.length > 0) {
+            const avg = globalStats.results5.reduce((a, b) => a + b.stack, 0) / globalStats.results5.length;
+            document.getElementById('anaAvg').innerText = avg.toFixed(1);
+        }
+    }
+
+    function updateHistory(res) {
+        const list = document.getElementById('historyList');
+        const item = document.createElement('div');
+        item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #222";
+        const color = res.isRadiance ? 'var(--radiance)' : (res.isPickup ? 'var(--gold)' : '#888');
+        item.innerHTML = `<span style="color:${color}">${res.name}${res.isPickup ? ' ['+res.constLevel+']' : ''}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
+        list.prepend(item);
+    }
+
+    function revealAll() { document.querySelectorAll('.card:not(.flipped) .card-back').forEach((c, i) => setTimeout(() => c.click(), i * 35)); }
+
+    function checkDone() {
+        const total = document.querySelectorAll('.card').length;
+        const flipped = document.querySelectorAll('.card.flipped').length;
+        if (total > 0 && total === flipped) {
+            document.getElementById('btnSkip').style.display = 'none';
+            document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false;
+        }
+    }
+    syncUI();
+</script>
+</body>
+</html>
