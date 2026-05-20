@@ -31,9 +31,12 @@
             overflow: hidden; pointer-events: auto;
         }
         
-        /* 👤 캐릭터 실루엣 효과 */
+        /* 👤 0.5초간 보이다가 터지는 캐릭터 실루엣 */
         .character-silhouette {
-            position: relative; z-index: 5100; opacity: 0; transform: scale(0.9);
+            font-size: 5em; font-weight: 900; color: transparent;
+            text-shadow: 0 0 40px rgba(255,255,255,0.8);
+            position: relative; z-index: 5100; opacity: 0;
+            transform: scale(0.9);
             animation: silhouette-pulse 0.6s ease-in-out forwards;
         }
         @keyframes silhouette-pulse {
@@ -43,7 +46,7 @@
             100% { opacity: 0; transform: scale(1.1); }
         }
 
-        /* ✨ 파편 스파크 이펙트 */
+        /* ✨ 파편/결정 스파크 이펙트 */
         .crystal-particle {
             position: absolute; width: 12px; height: 12px; background: #fff;
             transform: rotate(45deg); pointer-events: none; z-index: 5200;
@@ -58,7 +61,7 @@
             100% { transform: translate(var(--x), var(--y)) rotate(360deg) scale(0); opacity: 0; }
         }
 
-        /* 👑 최종 카드 공개 프레임 (아이디어 B: 순수 밤하늘 성좌 전용박스) */
+        /* 👑 최종 캐릭터 공개 화면 테마 */
         .reveal-card-display {
             position: relative; z-index: 5300; text-align: center; opacity: 0;
             transform: scale(0.7); display: flex; flex-direction: column; align-items: center;
@@ -66,27 +69,33 @@
         .reveal-card-display.pop-open {
             animation: card-pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        @keyframes card-pop-in { to { opacity: 1; transform: scale(1); } }
+        @keyframes card-pop-in {
+            to { opacity: 1; transform: scale(1); }
+        }
 
         .showcase-frame {
-            width: 320px; height: 500px; border-radius: 16px;
-            margin-bottom: 25px; position: relative; overflow: hidden;
-            background: radial-gradient(circle, #091026 0%, #02050f 100%);
-            border: 3px solid #fff;
+            width: 280px; height: 420px; border-radius: 16px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 3px solid #fff; box-shadow: 0 0 40px rgba(255,255,255,0.4);
+            margin-bottom: 20px; position: relative;
         }
-        .bg-pickup-reveal { border-color: var(--gold) !important; box-shadow: 0 0 60px rgba(255, 204, 0, 0.6); }
-        .bg-standard-reveal { border-color: var(--blue) !important; box-shadow: 0 0 50px rgba(64, 153, 255, 0.5); }
-        
-        #constellationCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .bg-pickup-reveal {
+            background: radial-gradient(circle, #3a2800 0%, #150f00 70%, #000 100%);
+            border-color: var(--gold) !important;
+            box-shadow: 0 0 50px rgba(255, 204, 0, 0.5), inset 0 0 30px rgba(255,204,0,0.3) !important;
+        }
+        .bg-standard-reveal {
+            background: radial-gradient(circle, #0f1e36 0%, #060d1a 70%, #000 100%);
+            border-color: var(--blue) !important;
+            box-shadow: 0 0 40px rgba(64, 153, 255, 0.4), inset 0 0 20px rgba(64,153,255,0.2) !important;
+        }
         
         .reveal-btn {
-            background: #fff; color: #000; padding: 14px 50px; border-radius: 50px;
+            background: #fff; color: #000; padding: 12px 40px; border-radius: 50px;
             font-weight: bold; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255,255,255,0.3);
-            font-size: 1em; transition: 0.2s; position: relative; z-index: 20;
         }
-        .reveal-btn:hover { transform: scale(1.05); }
 
-        /* 기본 레이아웃 및 폼 스타일 */
+        /* 기본 구조 레이아웃 */
         .name-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 10, 21, 0.95); z-index: 2000;
@@ -153,16 +162,31 @@
         .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
         .input-group input { flex: 1; background: #1a1f2c; border: 1px solid #3a4b66; color: white; padding: 8px; border-radius: 5px; }
         .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2736; font-size: 0.9em; }
+        
+        /* 💎 도감 대신 들어간 원석 저장고 UI */
+        .gem-storage-panel { background: rgba(13, 18, 30, 0.9); border: 1px solid #1e293b; border-radius: 15px; padding: 20px; text-align: center; box-sizing: border-box; }
+        .gem-flex { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 15px; }
+        .gem-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 12px 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* CSS 가상 원석 비주얼 아이콘 */
+        .primogem-icon {
+            width: 24px; height: 24px; background: #8ec5fc;
+            clip-path: polygon(50% 0%, 85% 35%, 50% 100%, 15% 35%);
+            box-shadow: 0 0 10px #8ec5fc; display: inline-block;
+            background: radial-gradient(circle, #e0f2fe 0%, #38bdf8 70%);
+        }
         #gameStatusAlert { text-align: center; color: #5bc0de; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
     </style>
 </head>
 <body>
 
 <div id="premiumCutscene" class="premium-cutscene-overlay">
-    <div id="silhouetteActor" class="character-silhouette"></div>
+    <div id="silhouetteActor" class="character-silhouette">👤</div>
     <div id="revealActor" class="reveal-card-display">
         <div id="showcaseFrame" class="showcase-frame">
-            <canvas id="constellationCanvas" width="314" height="494"></canvas>
+            <div style="font-size: 3.5em;" id="revealIcon">✨</div>
+            <div style="font-size: 1.8em; font-weight: 900; margin-top: 15px; text-shadow: 0 2px 5px #000;" id="revealName">캐릭터 명</div>
+            <div style="font-size: 0.9em; margin-top: 8px; color: var(--gold);" id="revealType">5성 등급 캐릭터</div>
         </div>
         <button class="reveal-btn" onclick="dismissPremiumCutscene()">가챠 결과창 확인</button>
     </div>
@@ -182,7 +206,7 @@
             <div class="dashboard">
                 <div class="stat"><span>현재 스택</span><b id="dispPity">0</b></div>
                 <div class="stat"><span>천장 여부</span><b id="dispGuaranteed">반천장</b></div>
-                <div class="stat"><span>누적 뽑기 수</span><b id="dispGems">0회</b></div>
+                <div class="stat"><span>누적 원석</span><b id="dispGems">0</b></div>
                 <div class="stat"><span>누적 결제액</span><b id="dispWon">₩ 0</b></div>
                 <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0.0 마리</b></div>
             </div>
@@ -221,20 +245,24 @@
             </div>
 
             <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--purple);">📊 개인 기원 분석</h4>
-                <div style="font-size:0.9em; display:flex; flex-direction:column; gap:5px;">
-                    <div>평균 5성 스택: <span id="analysisAvgPity" style="font-weight:bold; color:#fff;">0 스택</span></div>
-                </div>
-            </div>
-
-            <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--gold);">🏆 명예의 전당 (최소 원석 순)</h4>
-                <div id="rankList" class="rank-list"></div>
-            </div>
-
-            <div class="panel-box">
                 <h4 style="margin:0 0 8px 0; border-bottom:1px solid #223; padding-bottom:4px;">📜 실시간 가챠 기록</h4>
                 <div id="historyList" class="history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="gem-storage-panel">
+        <h4 style="margin:0; color:var(--blue);">💎 인벤토리 원석 보관소</h4>
+        <div class="gem-flex">
+            <div class="gem-box">
+                <div class="primogem-icon"></div>
+                <span style="font-size:0.9em; color:#94a3b8;">소모된 총 뒤얽힌 인연:</span>
+                <b style="font-size:1.3em; color:#fff; margin-left:5px;" id="invFates">0 개</b>
+            </div>
+            <div class="gem-box">
+                <div class="primogem-icon" style="background:radial-gradient(circle, #ffe27c 0%, #f59e0b 70%); box-shadow:0 0 10px #f59e0b;"></div>
+                <span style="font-size:0.9em; color:#94a3b8;">환산된 총 원석 데이터:</span>
+                <b style="font-size:1.3em; color:var(--gold); margin-left:5px;" id="invGems">0 개</b>
             </div>
         </div>
     </div>
@@ -242,6 +270,7 @@
 
 <script type="module">
     import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, addDoc } from "firebase/firestore";
     import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
     const firebaseConfig = {
@@ -254,21 +283,21 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    // 💡 [규칙 반영] 새로고침 시 닉네임만 보존하고 가챠 내부 스택 데이터는 완벽 초기화
-    let myName = localStorage.getItem('genshin_sim_name') || "";
-    let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [] };
+    let savedStats = JSON.parse(localStorage.getItem('genshin_sim_stats'));
+    let globalStats = savedStats || { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [] };
     
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
     
+    let myName = localStorage.getItem('genshin_sim_name') || "";
     let currentRoomId = null;
     let isHost = false;
     let isMultiplayerMode = false;
     let isGameStarted = true;
-    let cachedFiveStarResult = null;
-    let canvasAnimationId = null;
+    let cachedFiveStarResult = null; // 5성 연출 보관용 트래커
 
     window.handleWish = handleWish;
     window.revealAll = revealAll;
@@ -379,6 +408,7 @@
         star.className = `shooting-star star-${maxRank}`;
         effectLayer.appendChild(star);
 
+        // 5성이 존재하면 스킵 버튼 자체를 원천 봉쇄
         if (maxRank === 5) {
             document.getElementById('btnSkip').style.display = 'none';
             cachedFiveStarResult = results.find(r => r.rank === 5);
@@ -432,92 +462,93 @@
 
     function flipCard(el, res) {
         const card = el.closest('.card'); if(!card || card.classList.contains('flipped')) return;
-        if(res.rank === 5) { triggerPremiumCutscene(res, card); return; }
+        
+        // 🌟 5성 클릭 시 즉시 하이라이트 영화적 연출 트리거 전개
+        if(res.rank === 5) {
+            triggerPremiumCutscene(res, card);
+            return;
+        }
+
         executeCardFlipLogic(card, res);
     }
 
     function executeCardFlipLogic(card, res) {
         card.classList.add('flipped');
-        if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
+        if(res.rank === 5) { 
+            globalStats.results5.push(res); 
+            updateHistory(res); 
+        }
+        localStorage.setItem('genshin_sim_stats', JSON.stringify(globalStats));
         syncUI();
         syncMultiplayerStatus();
         checkDone();
     }
 
+    /* 🎬 하이엔드 5성 강제 암전 & 실루엣 폭발 비주얼 연출 소스 */
     function triggerPremiumCutscene(res, cardTarget) {
         const overlay = document.getElementById('premiumCutscene');
         const sil = document.getElementById('silhouetteActor');
         const rev = document.getElementById('revealActor');
         const frame = document.getElementById('showcaseFrame');
+        const nameText = document.getElementById('revealName');
+        const typeText = document.getElementById('revealType');
+        const iconArea = document.getElementById('revealIcon');
 
+        // 초기 무대 세팅 (암전)
         overlay.style.display = 'flex';
         sil.style.display = 'block';
-        rev.style.display = 'none';
+        rev.style.style = 'none';
         rev.classList.remove('pop-open');
         frame.className = "showcase-frame";
 
-        sil.innerHTML = `<div style="width:140px; height:240px; background:rgba(255,255,255,0.1); border-radius:50%; filter:blur(25px); box-shadow:0 0 50px #fff;"></div>`;
-
+        // 0.5초 실루엣 스테이지 진행 후 스파크 결정 분출
         setTimeout(() => {
             sil.style.display = 'none';
+            
+            // 크리스탈 결정 파편 80개 생성 및 무작위 비산 가동
             for (let i = 0; i < 80; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'crystal-particle';
+                
                 const angle = Math.random() * Math.PI * 2;
                 const distance = 150 + Math.random() * 400;
-                particle.style.setProperty('--x', `${Math.cos(angle) * distance}px`);
-                particle.style.setProperty('--y', `${Math.sin(angle) * distance}px`);
-                particle.style.left = '50%'; particle.style.top = '50%';
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--x', `${x}px`);
+                particle.style.setProperty('--y', `${y}px`);
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                
+                // 등급 타입에 매칭되는 이펙트 애니메이션 적용
                 particle.style.animation = `${res.isPickup ? 'scatter-pickup' : 'scatter-standard'} ${0.6 + Math.random() * 0.6}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
                 overlay.appendChild(particle);
                 setTimeout(() => particle.remove(), 1200);
             }
 
+            // 캐릭터 결과 공개창 띄우기 및 배경 색 반전 체인지
             rev.style.display = 'flex';
             rev.classList.add('pop-open');
-            if(res.isPickup) frame.className = "showcase-frame bg-pickup-reveal";
-            else frame.className = "showcase-frame bg-standard-reveal";
+            
+            if(res.isPickup) {
+                frame.classList.add('bg-pickup-reveal');
+                nameText.innerText = "5성 한정 픽업 캐릭터";
+                typeText.innerText = "🏆 기원 목표 저격 대성공!";
+                iconArea.innerText = "👑";
+            } else {
+                frame.classList.add('bg-standard-reveal');
+                nameText.innerText = "5성 상시 캐릭터";
+                typeText.innerText = "🐱 아련함이 몰려오는 픽뚫 발생";
+                iconArea.innerText = "💫";
+            }
 
-            drawConstellationBackground(res.isPickup);
+            // 트래커 데이터 바인딩 저장 준비
             cachedFiveStarResult = { card: cardTarget, data: res };
+
         }, 550);
     }
 
-    function drawConstellationBackground(isPickup) {
-        const canvas = document.getElementById('constellationCanvas'); if(!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const nodes = [{x: 70, y: 100}, {x: 160, y: 60}, {x: 250, y: 120}, {x: 210, y: 220}, {x: 110, y: 280}, {x: 160, y: 380}, {x: 240, y: 430}];
-        let progress = 0;
-        const color = isPickup ? '#ffcc00' : '#4099ff';
-        if(canvasAnimationId) cancelAnimationFrame(canvasAnimationId);
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.shadowBlur = 15; ctx.shadowColor = color;
-            ctx.beginPath();
-            if(nodes.length > 0) ctx.moveTo(nodes[0].x, nodes[0].y);
-            
-            const currentMaxNode = Math.floor(progress);
-            for(let i = 1; i <= currentMaxNode && i < nodes.length; i++) ctx.lineTo(nodes[i].x, nodes[i].y);
-            if(currentMaxNode < nodes.length - 1) {
-                const nextNode = nodes[currentMaxNode + 1], currNode = nodes[currentMaxNode], ratio = progress - currentMaxNode;
-                ctx.lineTo(currNode.x + (nextNode.x - currNode.x) * ratio, currNode.y + (nextNode.y - currNode.y) * ratio);
-            }
-            ctx.stroke();
-
-            nodes.forEach((node, idx) => {
-                if(idx <= Math.floor(progress)) {
-                    ctx.beginPath(); ctx.arc(node.x, node.y, 6, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ffffff'; ctx.fill();
-                }
-            });
-            if(progress < nodes.length - 1) { progress += 0.08; canvasAnimationId = requestAnimationFrame(animate); }
-        }
-        animate();
-    }
-
     function dismissPremiumCutscene() {
-        if(canvasAnimationId) cancelAnimationFrame(canvasAnimationId);
         document.getElementById('premiumCutscene').style.display = 'none';
         if(cachedFiveStarResult && cachedFiveStarResult.card) {
             executeCardFlipLogic(cachedFiveStarResult.card, cachedFiveStarResult.data);
@@ -529,24 +560,27 @@
         const totalWon = globalStats.totalPulls * COST_PER_PULL;
         document.getElementById('dispPity').innerText = globalStats.pity5;
         document.getElementById('dispGuaranteed').innerText = globalStats.isGuaranteed ? "확정권" : "반천장";
-        document.getElementById('dispGems').innerText = globalStats.totalPulls + "회";
+        document.getElementById('dispGems').innerText = (globalStats.totalPulls * 160).toLocaleString();
         document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
         document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
         
-        const total5Stars = globalStats.results5.length;
-        const avgPity = total5Stars > 0 ? Math.round(globalStats.results5.reduce((acc, cur) => acc + cur.stack, 0) / total5Stars) : 0;
-        document.getElementById('analysisAvgPity').innerText = `${avgPity} 스택`;
+        // 💎 하단 원석 인벤토리 보관소 정보 실시간 동기화
+        document.getElementById('invFates').innerText = globalStats.totalPulls.toLocaleString() + " 개";
+        document.getElementById('invGems').innerText = (globalStats.totalPulls * 160).toLocaleString() + " 개";
     }
 
     function updateHistory(res) {
         const list = document.getElementById('historyList'); if(!list) return;
         const item = document.createElement('div'); item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #1f2736";
-        const color = res.isPickup ? 'var(--gold)' : 'var(--blue)';
-        item.innerHTML = `<span style="color:${color}">${res.isPickup ? '★5 한정 픽업' : '★5 상시 캐릭터'}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
+        const color = res.isPickup ? 'var(--gold)' : '#888';
+        item.innerHTML = `<span style="color:${color}">${res.isPickup ? '★5 픽업 캐릭터' : '★5 상시 캐릭터'}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
         list.prepend(item);
     }
 
-    function revealAll() { document.querySelectorAll('.card:not(.flipped) .card-back').forEach((c, i) => setTimeout(() => c.click(), i * 35)); }
+    function revealAll() { 
+        document.querySelectorAll('.card:not(.flipped) .card-back').forEach((c, i) => setTimeout(() => c.click(), i * 35)); 
+    }
+    
     function checkDone() {
         const total = document.querySelectorAll('.card').length, flipped = document.querySelectorAll('.card.flipped').length;
         if (total > 0 && total === flipped) {
