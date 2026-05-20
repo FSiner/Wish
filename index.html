@@ -120,6 +120,48 @@
             100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 120px var(--purple); }
         }
 
+        /* 💥 운석 색상 변환 시 터지는 사방 파동(임팩트) 스타일 */
+        .shockwave-impact {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 150;
+        }
+        
+        /* 🟪 4성 변환 파동 애니메이션 */
+        .wave-4 {
+            border: 6px solid var(--purple);
+            box-shadow: 0 0 50px var(--purple), inset 0 0 30px var(--purple);
+            animation: explode-wave 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+        /* 🟨 5성 변환 파동 애니메이션 */
+        .wave-5 {
+            border: 8px solid var(--gold);
+            box-shadow: 0 0 100px var(--gold), inset 0 0 50px var(--gold);
+            animation: explode-wave 1.0s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+        /* 🔮 별빛포착 변환 파동 애니메이션 */
+        .wave-rad {
+            border: 10px solid var(--radiance);
+            box-shadow: 0 0 120px var(--radiance), inset 0 0 60px var(--radiance);
+            animation: explode-wave 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes explode-wave {
+            0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); border-width: 10px; }
+            70% { opacity: 0.8; }
+            100% { width: 1200px; height: 1200px; opacity: 0; transform: translate(-50%, -50%) scale(1); border-width: 1px; }
+        }
+
+        /* 🎬 임팩트 순간 배경 암전 효과 */
+        .stage-dimmed {
+            transition: background 0.1s ease-in;
+            background: radial-gradient(circle at center, #020408 0%, #000000 100%) !important;
+        }
+        
         /* 🟨 5성: 흰색으로 낙하 ➡️ 중앙 정지 후 황금색 대폭발 각성 ➡️ 최종 낙하 */
         @keyframes genshin-fall-5 {
             0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; }
@@ -217,12 +259,13 @@
         <div id="stage" class="wish-stage">
             <div id="effect-layer"></div>
         </div>
-        <div class="controls">
-            <button id="btn1" onclick="handleWish(1)">1회 기원</button>
-            <button id="btn10" onclick="handleWish(10)">10회 기원</button>
-            <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
+        <div id="stage" class="wish-stage" style="position: relative; overflow: hidden;">
+            <div id="multiNoticeOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,10,21,0.7); z-index:999; display:none; justify-content:center; align-items:center; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center; white-space: pre-line;">
+                <span id="multiNoticeText">멀티방 참여 후 방장이 게임을 시작해야 기원이 가능합니다.</span>
+            </div>
+            
+            <div id="effect-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100;"></div>
         </div>
-    </div>
     
     <div class="side-panel">
         <div class="panel-box">
@@ -511,18 +554,43 @@
         const hasRad = results.some(r => r.isRadiance);
 
         const star = document.createElement('div');
-        // 변환 전에는 클래스를 공유하되 고유 애니메이션 타이밍 지정
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
         effectLayer.appendChild(star);
 
-        // 💥 변환 연출 시점(대폭발 임팩트)에 맞춰 플래시 효과 발동 타이밍 최적화
-        if (maxRank === 4) {
-            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1750); // 멈춘 시점에 보라색 플래시
-        } else if (maxRank === 5 || hasRad) {
-            setTimeout(() => triggerFlash('#ffffff', 0.8), 2100); // 황금색/핑크색 각성 시 백색 폭발 플래시
+        // 💥 [추가] 운석이 정지하고 색상이 변하는 타이밍(35%~42% 사이인 약 1.5초~1.6초 시점)에 주변 임팩트 발동!
+        if (maxRank >= 4) {
+            setTimeout(() => {
+                // 1. 순간 배경 암전 임팩트 (원신 뽑기 특유의 배경 흑화)
+                stage.classList.add('stage-dimmed');
+                
+                // 2. 사방으로 뿜어져 나가는 충격파 파동 생성
+                const wave = document.createElement('div');
+                let waveType = 'wave-4';
+                if (hasRad) waveType = 'wave-rad';
+                else if (maxRank === 5) waveType = 'wave-5';
+                
+                wave.className = `shockwave-impact ${waveType}`;
+                // 운석이 멈추는 중앙 부근 좌표에 임팩트 배치
+                wave.style.left = '40%'; 
+                wave.style.top = '40%';
+                stage.appendChild(wave);
+                
+                // 애니메이션이 끝나면 충격파 엘리먼트 제거 및 배경 복구
+                setTimeout(() => {
+                    wave.remove();
+                    stage.classList.remove('stage-dimmed');
+                }, 1200);
+
+            }, 1500); // 1.5초 후에 쾅! 하고 임팩트 터짐
         }
 
-        // 전체 운석 애니메이션이 모두 끝난 후 카드가 펼쳐지도록 딜레이 조정
+        // 💥 변환 직후 화면 전체 셔터 플래시 타이밍
+        if (maxRank === 4) {
+            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1700); 
+        } else if (maxRank === 5 || hasRad) {
+            setTimeout(() => triggerFlash('#ffffff', 0.8), 1750); 
+        }
+
         const animTimes = { 'star-3': 2000, 'star-4': 3500, 'star-5': 4200, 'star-rad': 5500 };
         const totalDuration = hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank];
 
