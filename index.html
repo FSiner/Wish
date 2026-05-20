@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기원 시뮬레이터 - 도감 & 랭킹 에디션</title>
+    <title>기원 시뮬레이터 - 완성형 에디션</title>
     <script type="importmap">
         {
             "imports": {
@@ -17,7 +17,11 @@
             --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
             --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
         }
-        body { background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; min-height: 100vh; overflow-y: auto; padding: 20px 0; }
+        body { 
+            background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; 
+            margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box;
+            display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
+        }
         
         /* 🚪 초기 닉네임 설정 팝업 */
         .name-modal-overlay {
@@ -38,7 +42,7 @@
 
         /* 🌠 C6 돌파 컷신 이펙트 레이어 */
         .c6-cutscene {
-            position: fixed; top:0; left:0; width:100%; height:100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(12,20,40,1) 0%, rgba(3,5,15,1) 100%);
             z-index: 3000; display: none; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.8s ease; flex-direction: column;
@@ -58,24 +62,28 @@
         .c6-subtitle { color: #aaa; margin-top: 8px; font-size: 1em; opacity: 0; }
         .c6-btn { margin-top: 30px; padding: 10px 30px; border-radius: 20px; background: transparent; color: white; border: 1px solid #666; cursor: pointer; opacity: 0; }
 
-        /* 메인 레이아웃 및 서브 UI */
-        .wrapper { width: 95%; max-width: 1600px; display: flex; flex-direction: column; gap: 20px; }
-        .main-layout { display: flex; width: 100%; gap: 15px; height: 680px; }
-        .container { flex: 2.2; display: flex; flex-direction: column; position: relative; }
-        .side-panel { flex: 1.2; display: flex; flex-direction: column; gap: 12px; height: 100%; }
-        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #333; border-radius: 15px; padding: 12px; overflow: hidden; display: flex; flex-direction: column; }
-        .history-list, .rank-list, .room-user-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; height: 140px; }
+        /* 🖥️ 격자 형태 메인 레이아웃 보완 (찌부러짐 방지) */
+        .wrapper { width: 100%; max-width: 1550px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .main-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; width: 100%; align-items: start; }
+        
+        .container { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .side-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        
+        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #232d3f; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; box-sizing: border-box; }
+        .history-list, .rank-list, .room-user-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; max-height: 160px; min-height: 120px; padding-right: 5px; }
 
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
-        .stat { background: rgba(26, 29, 40, 0.8); padding: 8px; border-radius: 12px; border: 1px solid #444; text-align: center; }
-        .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 3px; }
-        .stat b { font-size: 1.05em; color: var(--gold); }
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+        .stat { background: rgba(26, 29, 40, 0.8); padding: 12px 8px; border-radius: 12px; border: 1px solid #253147; text-align: center; box-sizing: border-box; }
+        .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
+        .stat b { font-size: 1.1em; color: var(--gold); }
 
+        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
         .wish-stage { 
-            position: relative; flex-grow: 1; 
-            background: radial-gradient(circle at center, #1c2b3d 0%, #050a15 100%); 
+            position: relative; width: 100%; min-height: 480px; height: 480px;
+            background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
             border-radius: 20px; display: flex; justify-content: center; align-items: center; 
-            gap: 8px; padding: 15px; border: 1px solid #2a3a50; overflow: hidden; 
+            gap: 10px; padding: 20px; border: 1px solid #253346; overflow: hidden; box-sizing: border-box;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
         
         #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
@@ -101,31 +109,32 @@
 
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
 
-        /* 카드 UI */
+        /* 카드 UI 스타일 */
         .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
         .card.active { opacity: 1; transition: 0.15s ease-out; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.25s; transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .card-back { background: #1e2230; }
+        .card-back { background: #1e2230; border: 1px solid #334460; }
         .card-front { transform: rotateY(180deg); color: #000; font-weight: bold; text-align: center; display: flex; flex-direction: column; justify-content: center; font-size: 0.8em; }
         .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 20px #ffcc00; }
         .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 30px #ff4ef0; }
         .res-4 { background: linear-gradient(145deg, #bf40ff, #fff); }
         .res-3 { background: #3d4a5d; color: white; }
 
-        .controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-        button { padding: 10px 24px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); color:#111; }
-        button:disabled { background: #444 !important; color: #888 !important; cursor: not-allowed; }
-        .btn-skip { background: #333; color: white; display: none; }
+        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 5px; width: 100%; }
+        button { padding: 12px 30px; border: none; border-radius: 50px; font-weight: bold; font-size: 1em; cursor: pointer; background: var(--gold); color:#111; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s; }
+        button:active { transform: scale(0.96); }
+        button:disabled { background: #333 !important; color: #777 !important; cursor: not-allowed; box-shadow: none; }
+        .btn-skip { background: #222530; color: white; border: 1px solid #445; display: none; }
         
         .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
-        .input-group input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 5px; font-size: 0.85em; }
+        .input-group input { flex: 1; background: #1a1f2c; border: 1px solid #3a4b66; color: white; padding: 8px; border-radius: 5px; font-size: 0.85em; }
         .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
-        .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.9em; align-items: center; }
+        .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2736; font-size: 0.9em; align-items: center; }
         
         /* 🗂️ 캐릭터 도감 UI 디자인 */
-        .archive-panel { background: rgba(13, 18, 30, 0.95); border: 1px solid #2a3a50; border-radius: 15px; padding: 15px; }
+        .archive-panel { background: rgba(13, 18, 30, 0.95); border: 1px solid #2a3a50; border-radius: 15px; padding: 15px; width: 100%; box-sizing: border-box; }
         .archive-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; min-height: 80px; }
         .archive-card { width: 90px; height: 120px; border-radius: 8px; position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 8px; box-sizing: border-box; font-size: 0.75em; font-weight: bold; color: #111; border: 1px solid rgba(255,255,255,0.2); }
         .arch-5 { background: linear-gradient(to top, #ffcc00, #fff); box-shadow: 0 0 10px rgba(255,204,0,0.4); }
@@ -163,20 +172,26 @@
 
 <div class="wrapper">
     <div class="main-layout">
+        
         <div class="container">
             <div class="dashboard">
                 <div class="stat"><span>현재 스택</span><b id="dispPity">0</b></div>
                 <div class="stat"><span>천장 여부</span><b id="dispGuaranteed">반천장</b></div>
                 <div class="stat"><span>누적 원석</span><b id="dispGems">0</b></div>
                 <div class="stat"><span>누적 결제액</span><b id="dispWon">₩ 0</b></div>
-                <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0 마리</b></div>
+                <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0.0 마리</b></div>
             </div>
+            
             <div id="stage" class="wish-stage">
-                <div id="multiNoticeOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,10,21,0.7); z-index:999; display:none; justify-content:center; align-items:center; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center;">
+                <div id="multiNoticeOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,10,21,0.85); z-index:999; display:none; justify-content:center; align-items:center; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center;">
                     <span id="multiNoticeText">멀티방 참여 후 방장이 게임을 시작해야 기원이 가능합니다.</span>
                 </div>
                 <div id="effect-layer"></div>
+                <div id="stage-placeholder" style="color: rgba(255,255,255,0.15); font-size: 1.1em; pointer-events: none; text-align: center; font-weight: bold;">
+                    성간의 운석을 부르려면 하단의 기원 버튼을 누르세요
+                </div>
             </div>
+            
             <div class="controls">
                 <button id="btn1" onclick="handleWish(1)">1회 기원</button>
                 <button id="btn10" onclick="handleWish(10)">10회 기원</button>
@@ -186,7 +201,7 @@
         
         <div class="side-panel">
             <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방</h4>
+                <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방 (선택)</h4>
                 
                 <div class="nick-box-area">
                     <input type="text" id="editNickInput" style="background:transparent; border:none; color:var(--gold); font-weight:bold; font-size:0.95em; width:140px;" value="로딩 중...">
@@ -212,7 +227,7 @@
                 <div style="font-size:0.85em; display:flex; flex-direction:column; gap:5px;">
                     <div style="display:flex; justify-content:space-between;">
                         <span>보유 돌파 상태: <b id="dispConst" style="color:var(--radiance)">미보유</b></span>
-                        <span style="color:var(--gold); font-weight:bold;">🏆 현재 나의 순위: <b id="myRealRank" style="color:#fff;">- 위</b></span>
+                        <span style="color:var(--gold); font-weight:bold;">🏆 나의 순위: <b id="myRealRank" style="color:#fff;">- 위</b></span>
                     </div>
                     <div>평균 5성 스택: <b id="anaAvg">0</b></div>
                 </div>
@@ -223,8 +238,8 @@
                 <div id="rankList" class="rank-list"></div>
             </div>
 
-            <div class="panel-box" style="height:120px;">
-                <h4 style="margin:0 0 8px 0; border-bottom:1px solid #444; padding-bottom:4px;">📜 획득 기록</h4>
+            <div class="panel-box">
+                <h4 style="margin:0 0 8px 0; border-bottom:1px solid #223; padding-bottom:4px;">📜 획득 기록</h4>
                 <div id="historyList" class="history-list"></div>
             </div>
         </div>
@@ -246,7 +261,6 @@
     import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
     import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
-    // 🔒 제공해주신 Firebase 키값이 고정으로 적용되었습니다.
     const firebaseConfig = {
         apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
         authDomain: "wish-1b853.firebaseapp.com",
@@ -261,11 +275,8 @@
     const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    // 💾 LocalStorage 기반 자동 저장 구조 로드
     let savedStats = JSON.parse(localStorage.getItem('genshin_sim_stats'));
     let globalStats = savedStats || { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-    
-    // 🗂️ 도감 데이터 로드
     let savedArchive = JSON.parse(localStorage.getItem('genshin_sim_archive')) || [];
     
     const COST_PER_PULL = 2410;
@@ -319,7 +330,6 @@
         renderArchive();
     }
 
-    // ⚙️ 닉네임 실시간 변경 및 반영
     function changeNickname() {
         const newName = document.getElementById('editNickInput').value.trim();
         if(!newName) return alert("이름은 공백일 수 없습니다.");
@@ -330,7 +340,6 @@
         calculateMyRank();
     }
 
-    // 🏅 전 세계 랭킹 실시간 스캔 및 연산
     async function calculateMyRank() {
         if(globalStats.pickupCount < 6) {
             document.getElementById('myRealRank').innerText = "C6 미달성";
@@ -370,7 +379,6 @@
     }
     listenRankings();
 
-    // ⚔️ 실시간 멀티룸 매칭 로직
     function createRoom() {
         if(!myName) return alert("이름을 입력해주세요.");
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
@@ -436,7 +444,6 @@
     function getConstLabel() { return globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount); }
     function syncMultiplayerStatus() { if (!isMultiplayerMode || !currentRoomId) return; update(ref(rdb, `rooms/${currentRoomId}/users/${myName}`), { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() }); }
 
-    // 🌠 원신풍 C6 연출 엔진
     function playC6Cutscene() {
         const overlay = document.getElementById('c6Cutscene');
         overlay.style.display = 'flex'; setTimeout(() => overlay.style.opacity = '1', 50);
@@ -461,11 +468,12 @@
         }
     }
 
-    // --- 기원 물리 엔진 코어 시스템 ---
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
+        const placeholder = document.getElementById('stage-placeholder');
         
+        if(placeholder) placeholder.style.display = 'none';
         Array.from(stage.querySelectorAll('.card')).forEach(c => c.remove());
         effectLayer.innerHTML = ''; btn1.disabled = btn10.disabled = true;
 
@@ -482,7 +490,7 @@
                 stage.classList.add('stage-dimmed');
                 const wave = document.createElement('div');
                 wave.className = `shockwave-impact ${hasRad ? 'wave-rad' : (maxRank === 5 ? 'wave-5' : 'wave-4')}`;
-                wave.style.left = '40%'; wave.style.top = '40%'; stage.appendChild(wave);
+                stage.appendChild(wave);
                 setTimeout(() => { wave.remove(); stage.classList.remove('stage-dimmed'); }, 1200);
             }, 1500);
         }
@@ -520,7 +528,6 @@
             res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
             globalStats.pity5 = 0;
             
-            // 🗂️ 도감 기록 업데이트 연동
             pushToArchive(res);
         } else if (Math.random() * 100 < 5.1 || globalStats.pity4 >= 10) {
             res.rank = 4; res.name = "4성 캐릭터"; globalStats.pity4 = 0;
@@ -528,7 +535,6 @@
         return res;
     }
 
-    // 🗂️ 도감 아카이브 데이터 구조 처리
     function pushToArchive(res) {
         savedArchive.push({
             name: res.name,
@@ -547,7 +553,6 @@
         grid.innerHTML = '';
         
         let pickupTotal = -1;
-        
         if(savedArchive.length === 0) {
             grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 5성 캐릭터를 획득하지 못했습니다. 기원을 시작해 보세요!</div>`;
             return;
@@ -620,7 +625,7 @@
 
     function updateHistory(res) {
         const list = document.getElementById('historyList'); if(!list) return;
-        const item = document.createElement('div'); item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #222";
+        const item = document.createElement('div'); item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #1f2736";
         const color = res.isRadiance ? 'var(--radiance)' : (res.isPickup ? 'var(--gold)' : '#888');
         item.innerHTML = `<span style="color:${color}">${res.name}${res.isPickup ? ' ['+res.constLevel+']' : ''}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
         list.prepend(item);
