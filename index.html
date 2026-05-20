@@ -2,7 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기원</title>
+    <title>기원 시뮬레이터 - 대결 & 랭킹</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js",
+                "firebase/database": "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"
+            }
+        }
+    </script>
     <style>
         :root { 
             --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
@@ -10,16 +19,16 @@
         }
         body { background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; height: 100vh; overflow: hidden; }
         
-        .main-layout { display: flex; width: 98%; max-width: 1600px; height: 92vh; gap: 20px; z-index: 10; }
-        .container { flex: 3; display: flex; flex-direction: column; position: relative; }
-        .side-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #333; border-radius: 15px; padding: 15px; overflow: hidden; }
-        .history-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; height: 450px; }
+        .main-layout { display: flex; width: 98%; max-width: 1700px; height: 94vh; gap: 15px; z-index: 10; }
+        .container { flex: 2.2; display: flex; flex-direction: column; position: relative; }
+        .side-panel { flex: 1.2; display: flex; flex-direction: column; gap: 12px; height: 100%; }
+        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #333; border-radius: 15px; padding: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .history-list, .rank-list, .room-user-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; height: 160px; }
 
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
-        .stat { background: rgba(26, 29, 40, 0.8); padding: 10px; border-radius: 12px; border: 1px solid #444; text-align: center; }
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
+        .stat { background: rgba(26, 29, 40, 0.8); padding: 8px; border-radius: 12px; border: 1px solid #444; text-align: center; }
         .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 3px; }
-        .stat b { font-size: 1.1em; color: var(--gold); }
+        .stat b { font-size: 1.05em; color: var(--gold); }
 
         .wish-stage { 
             position: relative; flex-grow: 1; 
@@ -30,7 +39,6 @@
         
         #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        /* ☄️ 유성 베이스: 회색조 제거 및 고채도 설정 */
         .shooting-star { 
             width: 20px; height: 600px; position: absolute; 
             top: -700px; left: -10%; border-radius: 100px; 
@@ -40,16 +48,12 @@
             z-index: 200;
         }
 
-        /* 애니메이션 제어 */
         .star-3 { animation: fall-3 1.2s linear forwards; }
         .star-4 { animation: fall-4 3.0s ease-in-out forwards; }
         .star-5 { animation: fall-5 3.8s ease-in-out forwards; }
         .star-rad { animation: fall-rad 5.2s ease-in-out forwards; }
 
-        /* 3성: 블루 */
         @keyframes fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 15% { opacity:1; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-
-        /* 4성: 변환 시점에만 번쩍! 이후 끝까지 보라색 유지 */
         @keyframes fall-4 {
             0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
             15% { opacity:1; }
@@ -58,20 +62,15 @@
             60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); filter: brightness(1.2); }
             100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 120px var(--purple); }
         }
-
-        /* 5성: 변환 시점에 백금색 섬광! 이후 황금색 풀파워 유지 */
         @keyframes fall-5 {
             0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
             15% { opacity:1; }
             40% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--blue)); }
-            /* 💥 임팩트 지점: 흰색 섬광과 함께 황금색으로 진화 */
             50% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 300px 50px #fff; }
             60% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 30px var(--gold); filter: brightness(2); }
             75% { transform: translate(500px,500px) rotate(-45deg); filter: brightness(1.3); }
             100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 200px var(--gold); }
         }
-
-        /* 별빛포착: 2단 변신 */
         @keyframes fall-rad {
             0% { transform: translate(0,0) rotate(-45deg); opacity:0; }
             10% { opacity:1; }
@@ -81,7 +80,6 @@
             100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); }
         }
 
-        /* 섬광 레이어 */
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
 
         /* 카드 UI */
@@ -98,8 +96,14 @@
         .res-3 { background: #3d4a5d; color: white; }
 
         .controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-        button { padding: 12px 30px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); }
+        button { padding: 10px 24px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); color:#111; }
         .btn-skip { background: #333; color: white; display: none; }
+        
+        /* 멀티플레이용 입력 폼 스타일 */
+        .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
+        .input-group input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 5px; font-size: 0.85em; }
+        .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
+        .room-user-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #222; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -121,28 +125,197 @@
             <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
         </div>
     </div>
+    
     <div class="side-panel">
         <div class="panel-box">
-            <h4 style="margin:0 0 10px 0; color:var(--gold);">📊 기원 분석</h4>
-            <div style="font-size:0.85em; display:flex; flex-direction:column; gap:5px;">
-                <div>보유 돌파: <b id="dispConst" style="color:var(--radiance)">미보유</b></div>
-                <div>평균 스택: <b id="anaAvg">0</b></div>
+            <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방</h4>
+            <div class="input-group">
+                <input type="text" id="userNameInput" placeholder="닉네임 입력">
+                <button onclick="initMultiplayer()" style="background:var(--blue); color:white;">설정</button>
+            </div>
+            <div class="input-group" id="roomControls" style="display:none;">
+                <button onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
+                <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
+                <button onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
+            </div>
+            <div id="activeRoomInfo" style="font-size:0.85em; color:var(--gold); margin-bottom:5px;"></div>
+            <div id="roomUserList" class="room-user-list">
+                <div style="color:#666; text-align:center; padding-top:20px;">닉네임 설정 후 방에 입장하세요.</div>
             </div>
         </div>
+
+        <div class="panel-box">
+            <h4 style="margin:0 0 8px 0; color:var(--gold);">🏆 C6 명예의 전당 (최소 원석 순)</h4>
+            <div id="rankList" class="rank-list">
+                <div style="color:#666; text-align:center; padding-top:20px;">불러오는 중...</div>
+            </div>
+        </div>
+
         <div class="panel-box" style="flex-grow:1;">
-            <h4 style="margin:0 0 10px 0; border-bottom:1px solid #444;">📜 획득 기록</h4>
+            <h4 style="margin:0 0 8px 0; border-bottom:1px solid #444; padding-bottom:4px;">📜 획득 기록</h4>
             <div id="historyList" class="history-list"></div>
         </div>
     </div>
 </div>
 
-<script>
+<script type="module">
+    // ⚠️ 중요: 본인의 Firebase 프로젝트 설정 정보로 반드시 변경해야 합니다.
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+    import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
+  authDomain: "wish-1b853.firebaseapp.com",
+  projectId: "wish-1b853",
+  storageBucket: "wish-1b853.firebasestorage.app",
+  messagingSenderId: "629417355340",
+  appId: "1:629417355340:web:08f16592fc48bbfc14ace9",
+  measurementId: "G-NKTJZEHYQ6"
+};
+
+    // Firebase 초기화
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const rdb = getDatabase(app);
+
+    // 전역 상태 관리 변수
     let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
+    
+    // 멀티플레이 상태 변수
+    let myName = "";
+    let currentRoomId = null;
+    let isFinishedC6 = false;
 
+    // 기존 함수 전역 스코프 바인딩 (HTML onClick 이벤트 처리용)
+    window.handleWish = handleWish;
+    window.revealAll = revealAll;
+    window.flipCard = flipCard;
+    window.initMultiplayer = initMultiplayer;
+    window.createRoom = createRoom;
+    window.joinRoom = joinRoom;
+
+    // --- 페이지 로드 시 랭킹 실시간 리스너 작동 ---
+    function listenRankings() {
+        const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
+        onSnapshot(q, (snapshot) => {
+            const rankList = document.getElementById('rankList');
+            rankList.innerHTML = '';
+            let rank = 1;
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const item = document.createElement('div');
+                item.className = 'room-user-item';
+                item.innerHTML = `<span><b>${rank}위.</b> ${data.name}</span><span style="color:var(--gold)">${data.usedGems.toLocaleString()}개 (${data.pulls}뽑)</span>`;
+                rankList.appendChild(item);
+                rank++;
+            });
+            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">아직 기록이 없습니다. 최초의 C6에 도전해보세요!</div>`;
+        });
+    }
+    listenRankings();
+
+    // --- 멀티플레이어 관련 핵심 로직 ---
+    function initMultiplayer() {
+        const nameInput = document.getElementById('userNameInput');
+        if(!nameInput.value.trim()) return alert("사용할 닉네임을 입력해주세요!");
+        myName = nameInput.value.trim();
+        nameInput.disabled = true;
+        document.getElementById('roomControls').style.display = 'flex';
+    }
+
+    function createRoom() {
+        const roomId = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 방 코드
+        currentRoomId = roomId;
+        joinRoomSequence(roomId);
+    }
+
+    function joinRoom() {
+        const codeInput = document.getElementById('roomCodeInput');
+        if(!codeInput.value.trim()) return alert("방 코드를 입력해주세요.");
+        currentRoomId = codeInput.value.trim();
+        joinRoomSequence(currentRoomId);
+    }
+
+    function joinRoomSequence(roomId) {
+        document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
+        
+        // 내 실시간 상태 서버 전송 경로 설정
+        const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
+        const initialStatus = {
+            name: myName,
+            pulls: globalStats.totalPulls,
+            constLevel: globalStats.pickupCount === -1 ? "미보유" : "C" + globalStats.pickupCount,
+            pity5: globalStats.pity5,
+            lastUpdate: Date.now()
+        };
+        
+        set(myStatusRef, initialStatus);
+        // 연결 끊김 발생 시 방에서 자동 제거 설정
+        onDisconnect(myStatusRef).remove();
+
+        // 방 내 유저 정보 실시간 동기화 리스너
+        const roomRef = ref(rdb, `rooms/${roomId}/users`);
+        onValue(roomRef, (snapshot) => {
+            const users = snapshot.val();
+            const listContainer = document.getElementById('roomUserList');
+            listContainer.innerHTML = '';
+            
+            if(!users) return;
+            Object.keys(users).forEach(key => {
+                const user = users[key];
+                const item = document.createElement('div');
+                item.className = 'room-user-item';
+                // 풀돌 달성 유저 강조 이펙트
+                const isUserMax = user.constLevel === "풀돌";
+                item.innerHTML = `
+                    <span style="${isUserMax ? 'color:var(--radiance); font-weight:bold;' : ''}">
+                        ${user.name} [${user.constLevel}]
+                    </span>
+                    <span style="font-size:0.9em; color:#ccc;">
+                        ${user.pulls}뽑 (${user.pity5}스택)
+                    </span>`;
+                listContainer.appendChild(item);
+            });
+        });
+    }
+
+    function syncMultiplayerStatus() {
+        if (!currentRoomId || !myName) return;
+        const myStatusRef = ref(rdb, `rooms/${currentRoomId}/users/${myName}`);
+        update(myStatusRef, {
+            pulls: globalStats.totalPulls,
+            constLevel: globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount > 6 ? "풀돌" : "C"+globalStats.pickupCount),
+            pity5: globalStats.pity5,
+            lastUpdate: Date.now()
+        });
+    }
+
+    // --- C6 달성 시 기록 저장 기능 ---
+    async function checkAndUploadC6() {
+        if(globalStats.pickupCount >= 6 && !isFinishedC6) {
+            isFinishedC6 = true;
+            const finalGems = globalStats.totalPulls * 160;
+            alert(`🎉 축하합니다! 풀돌(C6)을 달성하셨습니다!\n소모한 원석: ${finalGems.toLocaleString()}개\n랭킹보드에 기록이 등록됩니다.`);
+            
+            try {
+                await addDoc(collection(db, "c6_rankings"), {
+                    name: myName || "무명 여행자",
+                    pulls: globalStats.totalPulls,
+                    usedGems: finalGems,
+                    timestamp: Date.now()
+                });
+            } catch (e) {
+                console.error("데이터베이스 저장 요류: ", e);
+            }
+        }
+    }
+
+    // --- 기존 시뮬레이터 핵심 비즈니스 로직 연동 ---
     function handleWish(count) {
-        const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer'), flash = document.getElementById('flashOverlay');
+        const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
         
         Array.from(stage.querySelectorAll('.card')).forEach(c => c.remove());
@@ -157,11 +330,10 @@
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
         effectLayer.appendChild(star);
 
-        // 💥 변환 타이밍에 섬광 터뜨리기 (버튼 누를 때가 아니라 중간 멈춤 시점)
         if (maxRank === 4) {
-            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1300); // 4성은 연보라 섬광
+            setTimeout(() => triggerFlash('#bf40ff', 0.4), 1300);
         } else if (maxRank === 5 || hasRad) {
-            setTimeout(() => triggerFlash('#ffffff', 0.7), 1700); // 5성은 강렬한 백색 섬광
+            setTimeout(() => triggerFlash('#ffffff', 0.7), 1700);
         }
 
         const animTimes = { 'star-3': 1200, 'star-4': 3000, 'star-5': 3800, 'star-rad': 5200 };
@@ -232,6 +404,8 @@
         globalStats.totalPulls++;
         if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
         syncUI();
+        syncMultiplayerStatus(); // 멀티플레이 실시간 상태 업로드
+        checkAndUploadC6();      // 풀돌 검증 및 업로드
         checkDone();
     }
 
