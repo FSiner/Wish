@@ -19,6 +19,24 @@
         }
         body { background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; display: flex; justify-content: center; align-items: center; margin: 0; height: 100vh; overflow: hidden; }
         
+        /* 🚪 초기 닉네임 설정 팝업(모달) 스타일 */
+        .name-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 10, 21, 0.95); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .name-modal-box {
+            background: #111827; border: 2px solid var(--blue); padding: 30px;
+            border-radius: 20px; text-align: center; width: 350px;
+            box-shadow: 0 0 30px rgba(64, 153, 255, 0.3);
+        }
+        .name-modal-box h3 { margin-top: 0; color: var(--blue); margin-bottom: 20px; }
+        .name-modal-box input {
+            width: 80%; background: #222; border: 1px solid #444; color: white;
+            padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; margin-bottom: 20px;
+        }
+        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em; }
+
         .main-layout { display: flex; width: 98%; max-width: 1700px; height: 94vh; gap: 15px; z-index: 10; }
         .container { flex: 2.2; display: flex; flex-direction: column; position: relative; }
         .side-panel { flex: 1.2; display: flex; flex-direction: column; gap: 12px; height: 100%; }
@@ -106,10 +124,20 @@
         .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.9em; align-items: center; }
         
         #gameStatusAlert { text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        #myNickLabel { background: rgba(64, 153, 255, 0.15); border: 1px dashed var(--blue); padding: 5px 10px; border-radius: 8px; font-size: 0.9em; margin-bottom: 8px; text-align: center; color: var(--blue); font-weight: bold; }
     </style>
 </head>
 <body>
 <div id="flashOverlay" class="flash-overlay"></div>
+
+<div id="nameModal" class="name-modal-overlay">
+    <div class="name-modal-box">
+        <h3>🌌 여행자 이름 등록</h3>
+        <p style="font-size:0.85em; color:#aaa; margin-bottom:15px;">랭킹 및 실시간 대결에 사용될 닉네임을 적어주세요.</p>
+        <input type="text" id="modalNameInput" placeholder="닉네임을 입력하세요" maxlength="12" onkeydown="if(event.key === 'Enter') submitInitialName()">
+        <button onclick="submitInitialName()">설정 완료 후 입장</button>
+    </div>
+</div>
 
 <div class="main-layout">
     <div class="container">
@@ -136,22 +164,21 @@
     <div class="side-panel">
         <div class="panel-box">
             <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방</h4>
-            <div class="input-group">
-                <input type="text" id="userNameInput" placeholder="닉네임 입력">
-                <button id="btnSetName" onclick="initMultiplayer()" style="background:var(--blue); color:white;">설정</button>
-            </div>
-            <div class="input-group" id="roomControls" style="display:none;">
+            <div id="myNickLabel">나의 닉네임: 설정 중...</div>
+            
+            <div class="input-group" id="roomControls">
                 <button id="btnCreateRoom" onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
                 <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
                 <button id="btnJoinRoom" onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
             </div>
             <div id="activeRoomInfo" style="font-size:0.85em; color:var(--gold); margin-bottom:5px;"></div>
             <div id="gameStatusAlert"></div>
+            
             <div id="hostControlArea" style="display:none; margin-bottom:8px;">
                 <button onclick="startGame()" style="width:100%; background:crimson; color:white; padding:8px; border-radius:5px;">🎮 대결 시작하기</button>
             </div>
             <div id="roomUserList" class="room-user-list">
-                <div style="color:#666; text-align:center; padding-top:20px;">닉네임 설정 후 방에 입장하세요.</div>
+                <div style="color:#666; text-align:center; padding-top:20px;">방 코드를 생성하거나 입력하여 입장해 주세요.</div>
             </div>
         </div>
 
@@ -178,12 +205,11 @@
 </div>
 
 <script type="module">
-    // Firebase 모듈 정상 바인딩
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
     import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
-    // ⚠️ [중요] 여기를 본인의 1단계 Firebase 설정 데이터로 반드시 교체해 주세요!
+    // ⚠️ [중요] 여기를 본인의 Firebase 설정 데이터로 반드시 교체해 주세요!
     const firebaseConfig = {
         apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
         authDomain: "wish-1b853.firebaseapp.com",
@@ -208,16 +234,26 @@
     let isHost = false;
     let isGameStarted = false;
 
-    // 함수들을 전역 스코프(window)에 매칭하여 HTML onClick 이벤트 바인딩 끊김 오류 완벽 해결
     window.handleWish = handleWish;
     window.revealAll = revealAll;
     window.flipCard = flipCard;
-    window.initMultiplayer = initMultiplayer;
+    window.submitInitialName = submitInitialName;
     window.createRoom = createRoom;
     window.joinRoom = joinRoom;
     window.startGame = startGame;
 
-    // 1. C6 글로벌 명예의 전당 로드
+    // 1. 초기 모달 창에서 이름 처리함수
+    function submitInitialName() {
+        const input = document.getElementById('modalNameInput');
+        if(!input || !input.value.trim()) return alert("사용할 이름을 입력해 주세요!");
+        
+        myName = input.value.trim();
+        
+        // 화면 패널 상단 레이블 최신화 및 모달창 제거
+        document.getElementById('myNickLabel').innerText = `나의 닉네임: ${myName}`;
+        document.getElementById('nameModal').style.display = 'none';
+    }
+
     function listenRankings() {
         const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
         onSnapshot(q, (snapshot) => {
@@ -238,23 +274,12 @@
     }
     listenRankings();
 
-    // 2. 닉네임 설정
-    function initMultiplayer() {
-        const nameInput = document.getElementById('userNameInput');
-        if(!nameInput || !nameInput.value.trim()) return alert("사용할 닉네임을 입력해주세요!");
-        myName = nameInput.value.trim();
-        nameInput.disabled = true;
-        document.getElementById('btnSetName').disabled = true;
-        document.getElementById('roomControls').style.display = 'flex';
-    }
-
-    // 3. 방 생성 (내가 방장)
     function createRoom() {
+        if(!myName) return alert("이름 설정이 올바르지 않습니다.");
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoomId = roomId;
         isHost = true;
         
-        // 방 상태 구조 초기화 (status: waiting)
         set(ref(rdb, `rooms/${roomId}/info`), {
             host: myName,
             status: "waiting"
@@ -264,8 +289,8 @@
         joinRoomSequence(roomId);
     }
 
-    // 4. 방 참여 (내가 참가자)
     function joinRoom() {
+        if(!myName) return alert("이름 설정이 올바르지 않습니다.");
         const codeInput = document.getElementById('roomCodeInput');
         if(!codeInput || !codeInput.value.trim()) return alert("방 코드를 입력해주세요.");
         currentRoomId = codeInput.value.trim();
@@ -273,18 +298,15 @@
         joinRoomSequence(currentRoomId);
     }
 
-    // 5. 방 내부 동기화 시퀀스 및 이탈 차단 시스템
     function joinRoomSequence(roomId) {
         document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
         
-        // [중요] 방에 한 번 진입하면 다른 방을 만들거나 참여 버튼을 누르지 못하도록 고정(Lock)
         document.getElementById('btnCreateRoom').disabled = true;
         document.getElementById('btnJoinRoom').disabled = true;
         document.getElementById('roomCodeInput').disabled = true;
 
         const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
         
-        // 실시간 뽑기 스택 데이터 구조 전송
         set(myStatusRef, {
             name: myName,
             pulls: 0,
@@ -294,7 +316,6 @@
         });
         onDisconnect(myStatusRef).remove();
 
-        // 방 전체 정보 관찰 리스너 (시작 여부 감시)
         onValue(ref(rdb, `rooms/${roomId}/info`), (snapshot) => {
             const info = snapshot.val();
             if(!info) return;
@@ -306,7 +327,6 @@
                 const overlay = document.getElementById('gameStartOverlay');
                 if(overlay) overlay.remove();
                 
-                // 기원 버튼 잠금 해제 -> 이제 마저 뽑기 가능!
                 document.getElementById('btn1').disabled = false;
                 document.getElementById('btn10').disabled = false;
             } else if(info.status === "waiting") {
@@ -314,7 +334,6 @@
             }
         });
 
-        // 👥 유저 목록 및 몇 뽑에 몇 스택인지 실시간 전광판 갱신
         const roomUsersRef = ref(rdb, `rooms/${roomId}/users`);
         onValue(roomUsersRef, (snapshot) => {
             const users = snapshot.val();
@@ -329,7 +348,6 @@
                 item.className = 'room-user-item';
                 const isUserMax = user.constLevel === "풀돌";
                 
-                // 전광판 화면 가독성 패치: 이름 [돌파상태] - OO뽑 (OO스택)
                 item.innerHTML = `
                     <span style="${isUserMax ? 'color:var(--radiance); font-weight:bold;' : 'color:#fff'}">
                         👤 ${user.name} <b style="color:var(--gold)">[${user.constLevel}]</b>
@@ -342,7 +360,6 @@
         });
     }
 
-    // 방장 전용 시작 신호 전송 함수
     function startGame() {
         if(!isHost || !currentRoomId) return;
         update(ref(rdb, `rooms/${currentRoomId}/info`), {
@@ -351,7 +368,6 @@
         document.getElementById('hostControlArea').style.display = 'none';
     }
 
-    // 내 실시간 뽑기 스택 데이터를 서버로 즉시 업로드하는 함수
     function syncMultiplayerStatus() {
         if (!currentRoomId || !myName) return;
         const myStatusRef = ref(rdb, `rooms/${currentRoomId}/users/${myName}`);
@@ -363,7 +379,6 @@
         });
     }
 
-    // 풀돌 인증 및 기록 전송
     async function checkAndUploadC6() {
         if(globalStats.pickupCount >= 6 && !isFinishedC6) {
             isFinishedC6 = true;
@@ -380,7 +395,6 @@
         }
     }
 
-    // --- 시뮬레이터 내부 가동 메커니즘 엔진 ---
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
@@ -475,7 +489,7 @@
         if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
         
         syncUI();
-        syncMultiplayerStatus(); // 카드 뒤집을 때마다 내 스택 실시간 브로드캐스팅
+        syncMultiplayerStatus();
         checkAndUploadC6();
         checkDone();
     }
@@ -517,7 +531,6 @@
         const flipped = document.querySelectorAll('.card.flipped').length;
         if (total > 0 && total === flipped) {
             document.getElementById('btnSkip').style.display = 'none';
-            // 게임이 이미 시작된 상태(playing)에서만 연속 기원 버튼 복구 활성화
             if(isGameStarted) {
                 document.getElementById('btn1').disabled = false;
                 document.getElementById('btn10').disabled = false;
