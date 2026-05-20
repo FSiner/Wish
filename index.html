@@ -99,7 +99,6 @@
         button { padding: 10px 24px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); color:#111; }
         .btn-skip { background: #333; color: white; display: none; }
         
-        /* 멀티플레이용 입력 폼 스타일 */
         .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
         .input-group input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 5px; font-size: 0.85em; }
         .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
@@ -145,6 +144,14 @@
         </div>
 
         <div class="panel-box">
+            <h4 style="margin:0 0 8px 0; color:var(--purple);">📊 개인 기원 분석</h4>
+            <div style="font-size:0.85em; display:flex; flex-direction:column; gap:5px;">
+                <div>보유 돌파: <b id="dispConst" style="color:var(--radiance)">미보유</b></div>
+                <div>평균 5성 스택: <b id="anaAvg">0</b></div>
+            </div>
+        </div>
+
+        <div class="panel-box">
             <h4 style="margin:0 0 8px 0; color:var(--gold);">🏆 C6 명예의 전당 (최소 원석 순)</h4>
             <div id="rankList" class="rank-list">
                 <div style="color:#666; text-align:center; padding-top:20px;">불러오는 중...</div>
@@ -159,37 +166,33 @@
 </div>
 
 <script type="module">
-    // ⚠️ 중요: 본인의 Firebase 프로젝트 설정 정보로 반드시 변경해야 합니다.
-    import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
-    import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDatabase, ref, set, onValue, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+    // ⚠️ [중요] 본인의 Firebase 설정 정보 객체로 아래를 꼭 대체하세요!
     const firebaseConfig = {
-  apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
-  authDomain: "wish-1b853.firebaseapp.com",
-  projectId: "wish-1b853",
-  storageBucket: "wish-1b853.firebasestorage.app",
-  messagingSenderId: "629417355340",
-  appId: "1:629417355340:web:08f16592fc48bbfc14ace9",
-  measurementId: "G-NKTJZEHYQ6"
-};
+        apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
+        authDomain: "wish-1b853.firebaseapp.com",
+        projectId: "wish-1b853",
+        storageBucket: "wish-1b853.firebasestorage.app",
+        messagingSenderId: "629417355340",
+        appId: "1:629417355340:web:08f16592fc48bbfc14ace9",
+        measurementId: "G-NKTJZEHYQ6"
+    };
 
-    // Firebase 초기화
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    // 전역 상태 관리 변수
     let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
     
-    // 멀티플레이 상태 변수
     let myName = "";
     let currentRoomId = null;
     let isFinishedC6 = false;
 
-    // 기존 함수 전역 스코프 바인딩 (HTML onClick 이벤트 처리용)
     window.handleWish = handleWish;
     window.revealAll = revealAll;
     window.flipCard = flipCard;
@@ -197,7 +200,6 @@
     window.createRoom = createRoom;
     window.joinRoom = joinRoom;
 
-    // --- 페이지 로드 시 랭킹 실시간 리스너 작동 ---
     function listenRankings() {
         const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
         onSnapshot(q, (snapshot) => {
@@ -212,12 +214,11 @@
                 rankList.appendChild(item);
                 rank++;
             });
-            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">아직 기록이 없습니다. 최초의 C6에 도전해보세요!</div>`;
+            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요!</div>`;
         });
     }
     listenRankings();
 
-    // --- 멀티플레이어 관련 핵심 로직 ---
     function initMultiplayer() {
         const nameInput = document.getElementById('userNameInput');
         if(!nameInput.value.trim()) return alert("사용할 닉네임을 입력해주세요!");
@@ -227,7 +228,7 @@
     }
 
     function createRoom() {
-        const roomId = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 방 코드
+        const roomId = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoomId = roomId;
         joinRoomSequence(roomId);
     }
@@ -241,34 +242,27 @@
 
     function joinRoomSequence(roomId) {
         document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
-        
-        // 내 실시간 상태 서버 전송 경로 설정
         const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
-        const initialStatus = {
+        
+        set(myStatusRef, {
             name: myName,
             pulls: globalStats.totalPulls,
             constLevel: globalStats.pickupCount === -1 ? "미보유" : "C" + globalStats.pickupCount,
             pity5: globalStats.pity5,
             lastUpdate: Date.now()
-        };
-        
-        set(myStatusRef, initialStatus);
-        // 연결 끊김 발생 시 방에서 자동 제거 설정
+        });
         onDisconnect(myStatusRef).remove();
 
-        // 방 내 유저 정보 실시간 동기화 리스너
         const roomRef = ref(rdb, `rooms/${roomId}/users`);
         onValue(roomRef, (snapshot) => {
             const users = snapshot.val();
             const listContainer = document.getElementById('roomUserList');
             listContainer.innerHTML = '';
-            
             if(!users) return;
             Object.keys(users).forEach(key => {
                 const user = users[key];
                 const item = document.createElement('div');
                 item.className = 'room-user-item';
-                // 풀돌 달성 유저 강조 이펙트
                 const isUserMax = user.constLevel === "풀돌";
                 item.innerHTML = `
                     <span style="${isUserMax ? 'color:var(--radiance); font-weight:bold;' : ''}">
@@ -287,19 +281,17 @@
         const myStatusRef = ref(rdb, `rooms/${currentRoomId}/users/${myName}`);
         update(myStatusRef, {
             pulls: globalStats.totalPulls,
-            constLevel: globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount > 6 ? "풀돌" : "C"+globalStats.pickupCount),
+            constLevel: globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount),
             pity5: globalStats.pity5,
             lastUpdate: Date.now()
         });
     }
 
-    // --- C6 달성 시 기록 저장 기능 ---
     async function checkAndUploadC6() {
         if(globalStats.pickupCount >= 6 && !isFinishedC6) {
             isFinishedC6 = true;
             const finalGems = globalStats.totalPulls * 160;
-            alert(`🎉 축하합니다! 풀돌(C6)을 달성하셨습니다!\n소모한 원석: ${finalGems.toLocaleString()}개\n랭킹보드에 기록이 등록됩니다.`);
-            
+            alert(`🎉 축하합니다! 풀돌(C6)을 달성하셨습니다!\n소모 원석: ${finalGems.toLocaleString()}개\n랭킹에 등록됩니다.`);
             try {
                 await addDoc(collection(db, "c6_rankings"), {
                     name: myName || "무명 여행자",
@@ -307,13 +299,10 @@
                     usedGems: finalGems,
                     timestamp: Date.now()
                 });
-            } catch (e) {
-                console.error("데이터베이스 저장 요류: ", e);
-            }
+            } catch (e) { console.error(e); }
         }
     }
 
-    // --- 기존 시뮬레이터 핵심 비즈니스 로직 연동 ---
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
@@ -368,7 +357,7 @@
                 else { win = false; globalStats.isGuaranteed = true; globalStats.radianceStack++; }
             }
             res.isPickup = win;
-            if (win) { globalStats.pickupCount++; res.constLevel = globalStats.pickupCount > 6 ? "풀돌" : "C" + globalStats.pickupCount; }
+            if (win) { globalStats.pickupCount++; res.constLevel = globalStats.pickupCount >= 6 ? "풀돌" : "C" + globalStats.pickupCount; }
             res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
             globalStats.pity5 = 0;
         } else if (Math.random() * 100 < 5.1 || globalStats.pity4 >= 10) {
@@ -404,8 +393,8 @@
         globalStats.totalPulls++;
         if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
         syncUI();
-        syncMultiplayerStatus(); // 멀티플레이 실시간 상태 업로드
-        checkAndUploadC6();      // 풀돌 검증 및 업로드
+        syncMultiplayerStatus();
+        checkAndUploadC6();
         checkDone();
     }
 
@@ -416,10 +405,17 @@
         document.getElementById('dispGems').innerText = (globalStats.totalPulls * 160).toLocaleString();
         document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
         document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
-        document.getElementById('dispConst').innerText = globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount > 6 ? "풀돌" : "C"+globalStats.pickupCount);
+        
+        // 데이터 안전성 검사 후 바인딩 (크래시 방지)
+        const constEl = document.getElementById('dispConst');
+        if (constEl) {
+            constEl.innerText = globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount);
+        }
+        
         if(globalStats.results5.length > 0) {
             const avg = globalStats.results5.reduce((a, b) => a + b.stack, 0) / globalStats.results5.length;
-            document.getElementById('anaAvg').innerText = avg.toFixed(1);
+            const avgEl = document.getElementById('anaAvg');
+            if (avgEl) avgEl.innerText = avg.toFixed(1);
         }
     }
 
