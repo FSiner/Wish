@@ -1,8 +1,10 @@
+:기원 시뮬레이터:wish.html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기원 시뮬레이터 - 완성형 에디션 (폴더 히스토리)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기원 시뮬레이터 - 완성형 에디션</title>
     <script type="importmap">
         {
             "imports": {
@@ -23,10 +25,9 @@
             display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
         }
         
-        /* 🚪 초기 닉네임 설정 팝업 */
+        /* 🚪 초기 닉네임 설정 팝업 (새로고침 시 무조건 등장!) */
         .name-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 10, 21, 0.95); z-index: 2000;
             display: flex; justify-content: center; align-items: center;
         }
@@ -39,21 +40,18 @@
             width: 80%; background: #222; border: 1px solid #444; color: white;
             padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; margin-bottom: 20px;
         }
-        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em;
-            background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
+        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em; background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
 
         /* 🌠 C6 돌파 컷신 이펙트 레이어 */
         .c6-cutscene {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(12,20,40,1) 0%, rgba(3,5,15,1) 100%);
             z-index: 3000; display: none; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.8s ease; flex-direction: column;
         }
         .const-vessel { position: relative; width: 400px; height: 400px; }
         .const-star {
-            position: absolute;
-            width: 14px; height: 14px; background: #fff;
+            position: absolute; width: 14px; height: 14px; background: #fff;
             border-radius: 50%; box-shadow: 0 0 15px #fff; opacity: 0; transform: scale(0);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -81,7 +79,7 @@
         .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
         .stat b { font-size: 1.1em; color: var(--gold); }
 
-        /* 🌠 뽑기 스테이지 고정 스타일 */
+        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
         .wish-stage { 
             position: relative; width: 100%; min-height: 480px; height: 480px;
             background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
@@ -152,10 +150,24 @@
 
         #gameStatusAlert { text-align: center; color: #5bc0de; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
         .nick-box-area { background: rgba(255, 204, 0, 0.05); border: 1px dashed var(--gold); padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 🔔 고급스러운 커스텀 알림 토스트 UI */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .custom-toast {
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--gold);
+            color: white; padding: 12px 24px; border-radius: 10px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9em;
+        }
+        .custom-toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 <div id="flashOverlay" class="flash-overlay"></div>
+<div id="toastContainer" class="toast-container"></div>
 
 <div id="nameModal" class="name-modal-overlay">
     <div class="name-modal-box">
@@ -169,19 +181,9 @@
 <div id="c6Cutscene" class="c6-cutscene">
     <div class="const-vessel">
         <svg class="const-svg">
-            <line id="line1" class="const-line" x1="200" y1="50" x2="320" y2="130" />
-            <line id="line2" class="const-line" x1="320" y1="130" x2="290" y2="270" />
-            <line id="line3" class="const-line" x1="290" y1="270" x2="110" y2="270" />
-            <line id="line4" class="const-line" x1="110" y1="270" x2="80" y2="130" />
-            <line id="line5" class="const-line" x1="80" y1="130" x2="200" y2="50" />
-            <line id="line6" class="const-line" x1="200" y1="50" x2="200" y2="200" />
+            <line id="line1" class="const-line" x1="200" y1="50" x2="320" y2="130" /><line id="line2" class="const-line" x1="320" y1="130" x2="290" y2="270" /><line id="line3" class="const-line" x1="290" y1="270" x2="110" y2="270" /><line id="line4" class="const-line" x1="110" y1="270" x2="80" y2="130" /><line id="line5" class="const-line" x1="80" y1="130" x2="200" y2="50" /><line id="line6" class="const-line" x1="200" y1="50" x2="200" y2="200" />
         </svg>
-        <div id="star1" class="const-star" style="top:43px; left:193px;"></div>
-        <div id="star2" class="const-star" style="top:123px; left:313px;"></div>
-        <div id="star3" class="const-star" style="top:263px; left:283px;"></div>
-        <div id="star4" class="const-star" style="top:263px; left:103px;"></div>
-        <div id="star5" class="const-star" style="top:123px; left:73px;"></div>
-        <div id="star6" class="const-star" style="top:193px; left:193px;"></div>
+        <div id="star1" class="const-star" style="top:43px; left:193px;"></div><div id="star2" class="const-star" style="top:123px; left:313px;"></div><div id="star3" class="const-star" style="top:263px; left:283px;"></div><div id="star4" class="const-star" style="top:263px; left:103px;"></div><div id="star5" class="const-star" style="top:123px; left:73px;"></div><div id="star6" class="const-star" style="top:193px; left:193px;"></div>
     </div>
     <div id="c6Title" class="c6-title">운명의 자리 6단계 돌파</div>
     <div id="c6Subtitle" class="c6-subtitle">축하합니다! 캐릭터 풀돌(C6)을 완성했습니다.</div>
@@ -211,8 +213,8 @@
             </div>
             
             <div class="controls">
-                <button id="btn1" onclick="handleWish(1)" disabled>1회 기원</button>
-                <button id="btn10" onclick="handleWish(10)" disabled>10회 기원</button>
+                <button id="btn1" onclick="handleWish(1)">1회 기원</button>
+                <button id="btn10" onclick="handleWish(10)">10회 기원</button>
                 <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
             </div>
         </div>
@@ -227,7 +229,7 @@
                 </div>
                 
                 <div class="input-group" id="roomControls">
-                    <button id="btnCreateRoom" onclick="createRoom()">방 생성</button>
+                    <button id="btnCreateRoom" onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
                     <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
                     <button id="btnJoinRoom" onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
                 </div>
@@ -293,17 +295,17 @@
     const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    // 💾 요구사항: 새로고침 시 현재 진행 상태는 초기화되지만, 완료된 '이전 판들의 폴더' 히스토리는 로컬 저장소에서 안전하게 불러옴
+    // 💾 요구사항: 새로고침 시 "과거 완료된 기록 폴더"만 로드하고, 현재 게임 진행 상황은 일절 저장/불러오지 않고 0으로 완전히 초기화!
     let historyFolders = JSON.parse(localStorage.getItem('genshin_sim_folders')) || [];
 
-    // 현재 판(세션) 데이터 정의 및 초기화
+    // 🧼 [핵심] 현재 판 데이터는 로컬 스토리지 무시하고 언제나 완벽하게 '0' 상태에서 태초로 시작!
     let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-    let savedArchive = []; // 이번 판에서 뽑은 5성 목록 데이터
+    let savedArchive = []; // 이번 판에 얻은 5성 임시 배열
     
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
     
-    let myName = localStorage.getItem('genshin_sim_name') || "";
+    let myName = ""; // 새로고침 시 언제나 다시 등록하도록 강제함
     let currentRoomId = null;
     let isFinishedC6 = false; 
     let isHost = false;
@@ -321,87 +323,104 @@
     window.closeC6Cutscene = closeC6Cutscene;
 
     window.onload = function() {
-        if(!myName) {
-            document.getElementById('nameModal').style.display = 'flex';
-        } else {
-            document.getElementById('editNickInput').value = myName;
-            document.getElementById('btn1').disabled = false;
-            document.getElementById('btn10').disabled = false;
-            syncUI();
-            renderArchiveFolders(); // 도감을 하나의 통합 폴더 리스트 형태로 렌더링
-            calculateMyRank();
-        }
+        // 🔄 새로고침 완료 시 항상 이름 입력 모달이 대기하고 있도록 보장
+        document.getElementById('nameModal').style.display = 'flex';
+        document.getElementById('editNickInput').value = "로딩 중...";
+        document.getElementById('btn1').disabled = true;
+        document.getElementById('btn10').disabled = true;
+        syncUI();
+        renderArchiveFolders(); // 과거의 추억 폴더 목록은 그대로 렌더링!
+        calculateMyRank();
     };
+
+    // 🔔 커스텀 토스트 알림창 출력 함수 (alert 방지용 우아한 인터페이스)
+    function showToast(message) {
+        const container = document.getElementById('toastContainer');
+        if(!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast';
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 50);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function saveToLocalStorage() {
+        // [중요] 현재 진행중인 게임 수치는 절대 저장하지 않음으로써 다음 새로고침 시 영구 초기화를 보증함!
+    }
 
     function submitInitialName() {
         const input = document.getElementById('modalNameInput');
-        if(!input || !input.value.trim()) return alert("사용할 이름을 입력해 주세요!");
+        if(!input || !input.value.trim()) return showToast("사용할 이름을 입력해 주세요! ✍️");
         myName = input.value.trim();
-        localStorage.setItem('genshin_sim_name', myName);
         document.getElementById('editNickInput').value = myName;
         document.getElementById('nameModal').style.display = 'none';
         document.getElementById('btn1').disabled = false;
         document.getElementById('btn10').disabled = false;
         syncUI();
         renderArchiveFolders();
+        showToast(`어서와, ${myName}! 행운이 가득하길 바랄게! 🍀`);
     }
 
     function changeNickname() {
         const newName = document.getElementById('editNickInput').value.trim();
-        if(!newName) return alert("이름은 공백일 수 없습니다.");
+        if(!newName) return showToast("이름은 공백일 수 없습니다! ❌");
         myName = newName;
-        localStorage.setItem('genshin_sim_name', myName);
-        alert("닉네임이 성공적으로 변경되었습니다! (이후 완료 폴더 이름에 반영됩니다)");
+        showToast("닉네임이 성공적으로 변경되었습니다! 😉");
         syncMultiplayerStatus();
         calculateMyRank();
     }
 
-    // 🔥 [수정 핵심] 닉네임이 같을 때 오직 더 적은 원석을 쓴 최고 기록만 랭킹에 남김
+    // 🏆 명예의 전당 갱신 처리 (동일 이름 중 '최고 기록'으로만 치환)
     async function checkAndUploadC6() {
         if(globalStats.pickupCount >= 6 && !isFinishedC6) {
             isFinishedC6 = true;
             playC6Cutscene();
 
-            // 한 게임이 종료될 때 현재 판의 데이터를 아카이브 폴더 규격에 맞춰 저장
+            // 이번 판이 무사히 풀돌로 끝났으니, 하나의 소중한 기록 파일(폴더)로 밀봉해서 브라우저 아카이브에 영구 저장!
             saveCurrentGameToFolder();
 
             const myUsedGems = globalStats.totalPulls * 160;
             try {
-                // 1. 현재 입력한 내 닉네임과 동일한 랭킹 도큐먼트 조회
+                // 1. 현재 입력한 닉네임과 똑같은 명예의 전당 기록이 있는지 서치
                 const q = query(collection(db, "c6_rankings"), where("name", "==", myName));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    // 2. 이미 등록된 데이터가 있을 경우 기존 기록과 매칭
                     let existingDoc = querySnapshot.docs[0];
                     let existingGems = existingDoc.data().usedGems;
 
-                    // 새로운 기록이 기존 기록보다 더 적은 원석을 사용한 우수한 기록일 경우에만 교체 작업 수행
+                    // 2. 만약 이미 기록이 있는데 이번에 원석을 "더 적게" 써서 운 좋게 깼다면 기존 기록 삭제 후 새 최고기록 등극!
                     if (myUsedGems < existingGems) {
-                        // 기존의 떨어지는 기록 도큐먼트 파괴
                         await deleteDoc(existingDoc.ref);
-                        // 최신 스펙의 고성능 기록으로 전당에 등재
                         await addDoc(collection(db, "c6_rankings"), { 
                             name: myName, 
                             pulls: globalStats.totalPulls, 
                             usedGems: myUsedGems, 
                             timestamp: Date.now() 
                         });
+                        showToast("🎉 축하해! 기존의 내 기록을 뛰어넘어 새로운 최단 기록을 명예의 전당에 세웠어!");
+                    } else {
+                        showToast("이번에도 멋진 도전이었어! 하지만 아쉽게도 내 기존 랭킹 기록보다는 원석을 더 썼네 😅");
                     }
                 } else {
-                    // 3. 기존에 박제된 같은 이름의 기록이 아예 없는 신규 유저라면 즉시 등재
+                    // 3. 기존에 등록된 기록이 없다면 최초 기록으로 바로 명예의 전당 박제!
                     await addDoc(collection(db, "c6_rankings"), { 
                         name: myName, 
                         pulls: globalStats.totalPulls, 
                         usedGems: myUsedGems, 
                         timestamp: Date.now() 
                     });
+                    showToast("🎉 명예의 전당에 첫 깃발을 꽂았어! 전당 리스트를 확인해봐!");
                 }
-            } catch (e) { console.error("명예의 전당 필터 기록 검증 도중 치명적 오류 발생:", e); }
+            } catch (e) { console.error("명예의 전당 검증 중 데이터 통신 실패:", e); }
         }
     }
 
-    // 📁 [추가 기능] 한 세션의 뽑기 정보를 하나의 패키지 폴더 형태로 밀봉해 영구 누적
+    // 📁 이번 판의 뽑기 이력을 하나의 폴더 상자로 구성해서 로컬 아카이브에 보관하는 메커니즘
     function saveCurrentGameToFolder() {
         const totalWon = globalStats.totalPulls * COST_PER_PULL;
         const newFolder = {
@@ -412,22 +431,22 @@
             totalWon: totalWon,
             chickenCount: (totalWon / CHICKEN_PRICE).toFixed(1),
             date: new Date().toLocaleDateString(),
-            characters: [...savedArchive] // 해당 판의 모든 5성 카드 배열 완벽 카피
+            characters: [...savedArchive] // 5성들 이력 캡처
         };
         
-        historyFolders.unshift(newFolder); // 최신 폴더가 제일 위단에 배치되도록 추가
+        historyFolders.unshift(newFolder); // 신규 폴더가 위로 가게 삽입
         localStorage.setItem('genshin_sim_folders', JSON.stringify(historyFolders));
         renderArchiveFolders();
     }
 
-    // 🗺️ [도감 뷰 교체] 단순 5성 카드를 길게 늘어놓는 구조에서 독립된 판을 묶은 '폴더 히스토리' 뷰로 전면 전개
+    // 🗺️ 하단 도감 그리드 영역을 이쁘장한 '플레이 폴더' 리스트 뷰형태로 복원 및 렌더링
     function renderArchiveFolders() {
         const grid = document.getElementById('archiveGrid');
         if(!grid) return;
         grid.innerHTML = '';
 
         if(historyFolders.length === 0) {
-            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요!</div>`;
+            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요! 🎁</div>`;
             return;
         }
 
@@ -435,7 +454,6 @@
             const folderWrapper = document.createElement('div');
             folderWrapper.className = 'history-folder-box';
 
-            // 폴더 상단 메타 헤더 렌더링
             let headerHtml = `
                 <div class="folder-header">
                     <span class="folder-title">📁 플레이 기록 폴더 #${historyFolders.length - idx} (${folder.playerName})</span>
@@ -443,7 +461,6 @@
                 </div>
             `;
 
-            // 폴더 내부에 속해 있는 5성 전유물들 가로 배치 목록 작성
             let charListHtml = `<div class="folder-char-list">`;
             let pCount = -1;
             
@@ -494,9 +511,7 @@
             rankList.innerHTML = '';
             let rank = 1;
             
-            // 데이터베이스 상의 동기화 불일치를 한 번 더 클라이언트단에서 안전 중복 제거 검사
             let seenNames = new Set();
-            
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 if(!seenNames.has(data.name)){
@@ -508,14 +523,14 @@
                     rank++;
                 }
             });
-            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요!</div>`;
+            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요! 🚀</div>`;
             calculateMyRank();
         });
     }
     listenRankings();
 
     function createRoom() {
-        if(!myName) return alert("이름을 입력해주세요.");
+        if(!myName) return showToast("이름을 먼저 입력해주셔야 방을 생성할 수 있어! 👤");
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoomId = roomId; isHost = true; isMultiplayerMode = true; isGameStarted = false;
         set(ref(rdb, `rooms/${roomId}/info`), { host: myName, status: "waiting" });
@@ -532,7 +547,7 @@
 
     function joinRoom() {
         const codeInput = document.getElementById('roomCodeInput');
-        if(!codeInput || !codeInput.value.trim()) return alert("방 코드를 입력해주세요.");
+        if(!codeInput || !codeInput.value.trim()) return showToast("방 코드를 바르게 기입해줘! 🔢");
         currentRoomId = codeInput.value.trim(); isHost = false; isMultiplayerMode = true; isGameStarted = false;
         document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
         
@@ -650,7 +665,6 @@
             res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
             globalStats.pity5 = 0;
             
-            // 이번 세션 임시 배열에 기록 누적
             savedArchive.push({
                 name: res.name,
                 rank: res.rank,
@@ -735,3 +749,10 @@
 </script>
 </body>
 </html>
+
+
+이제 새로고침을 하거나 이 링크를 다시 타고 들어오면, 이전에 진행했던 스택과 뽑기 수치가 완벽하게 초기화되면서 **"태초의 백지 상태"**로 이름부터 새로 등록하게 될 거야! 
+
+그와 동시에 과거에 C6를 달성했던 기념비적인 판의 기록들은 하단의 **'여행자 아카이브 폴더'**에 그대로 남아있어! 언제든 네 화려한 성적표를 구경할 수 있지! 📁✨
+
+또 고치고 싶은 부분이나 불편한 점이 있다면 내게 편하게 이야기해 줘! 언제나 옆에서 귀를 쫑긋 세우고 대기하고 있을 테니까! 🍗🌸🌟
