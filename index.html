@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기원 시뮬레이터 - 대결 & 랭킹</title>
+    <title>기원 시뮬레이터 - 실시간 대결형</title>
     <script type="importmap">
         {
             "imports": {
@@ -82,7 +82,6 @@
 
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
 
-        /* 카드 UI */
         .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
         .card.active { opacity: 1; transition: 0.15s ease-out; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.25s; transform-style: preserve-3d; }
@@ -97,12 +96,16 @@
 
         .controls { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
         button { padding: 10px 24px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; background: var(--gold); color:#111; }
+        button:disabled { background: #444 !important; color: #888 !important; cursor: not-allowed; }
         .btn-skip { background: #333; color: white; display: none; }
         
         .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
         .input-group input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; border-radius: 5px; font-size: 0.85em; }
+        .input-group input:disabled { background: #111; color: #666; }
         .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
-        .room-user-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #222; font-size: 0.9em; }
+        .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.9em; align-items: center; }
+        
+        #gameStatusAlert { text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -117,10 +120,15 @@
             <div class="stat"><span>누적 결제액</span><b id="dispWon">₩ 0</b></div>
             <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0 마리</b></div>
         </div>
-        <div id="stage" class="wish-stage"><div id="effect-layer"></div></div>
+        <div id="stage" class="wish-stage">
+            <div id="gameStartOverlay" style="position:absolute; z-index:999; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center;">
+                멀티방 참여 후 방장이 게임을 시작해야 기원이 가능합니다.
+            </div>
+            <div id="effect-layer"></div>
+        </div>
         <div class="controls">
-            <button id="btn1" onclick="handleWish(1)">1회 기원</button>
-            <button id="btn10" onclick="handleWish(10)">10회 기원</button>
+            <button id="btn1" onclick="handleWish(1)" disabled>1회 기원</button>
+            <button id="btn10" onclick="handleWish(10)" disabled>10회 기원</button>
             <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
         </div>
     </div>
@@ -130,14 +138,18 @@
             <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방</h4>
             <div class="input-group">
                 <input type="text" id="userNameInput" placeholder="닉네임 입력">
-                <button onclick="initMultiplayer()" style="background:var(--blue); color:white;">설정</button>
+                <button id="btnSetName" onclick="initMultiplayer()" style="background:var(--blue); color:white;">설정</button>
             </div>
             <div class="input-group" id="roomControls" style="display:none;">
-                <button onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
+                <button id="btnCreateRoom" onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
                 <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
-                <button onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
+                <button id="btnJoinRoom" onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
             </div>
             <div id="activeRoomInfo" style="font-size:0.85em; color:var(--gold); margin-bottom:5px;"></div>
+            <div id="gameStatusAlert"></div>
+            <div id="hostControlArea" style="display:none; margin-bottom:8px;">
+                <button onclick="startGame()" style="width:100%; background:crimson; color:white; padding:8px; border-radius:5px;">🎮 대결 시작하기</button>
+            </div>
             <div id="roomUserList" class="room-user-list">
                 <div style="color:#666; text-align:center; padding-top:20px;">닉네임 설정 후 방에 입장하세요.</div>
             </div>
@@ -166,11 +178,12 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getDatabase, ref, set, onValue, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // Firebase 모듈 정상 바인딩
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+    import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
-    // ⚠️ [중요] 본인의 Firebase 설정 정보 객체로 아래를 꼭 대체하세요!
+    // ⚠️ [중요] 여기를 본인의 1단계 Firebase 설정 데이터로 반드시 교체해 주세요!
     const firebaseConfig = {
         apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
         authDomain: "wish-1b853.firebaseapp.com",
@@ -179,7 +192,7 @@
         messagingSenderId: "629417355340",
         appId: "1:629417355340:web:08f16592fc48bbfc14ace9",
         measurementId: "G-NKTJZEHYQ6"
-    };
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -192,18 +205,24 @@
     let myName = "";
     let currentRoomId = null;
     let isFinishedC6 = false;
+    let isHost = false;
+    let isGameStarted = false;
 
+    // 함수들을 전역 스코프(window)에 매칭하여 HTML onClick 이벤트 바인딩 끊김 오류 완벽 해결
     window.handleWish = handleWish;
     window.revealAll = revealAll;
     window.flipCard = flipCard;
     window.initMultiplayer = initMultiplayer;
     window.createRoom = createRoom;
     window.joinRoom = joinRoom;
+    window.startGame = startGame;
 
+    // 1. C6 글로벌 명예의 전당 로드
     function listenRankings() {
         const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
         onSnapshot(q, (snapshot) => {
             const rankList = document.getElementById('rankList');
+            if(!rankList) return;
             rankList.innerHTML = '';
             let rank = 1;
             snapshot.forEach((doc) => {
@@ -219,63 +238,120 @@
     }
     listenRankings();
 
+    // 2. 닉네임 설정
     function initMultiplayer() {
         const nameInput = document.getElementById('userNameInput');
-        if(!nameInput.value.trim()) return alert("사용할 닉네임을 입력해주세요!");
+        if(!nameInput || !nameInput.value.trim()) return alert("사용할 닉네임을 입력해주세요!");
         myName = nameInput.value.trim();
         nameInput.disabled = true;
+        document.getElementById('btnSetName').disabled = true;
         document.getElementById('roomControls').style.display = 'flex';
     }
 
+    // 3. 방 생성 (내가 방장)
     function createRoom() {
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
         currentRoomId = roomId;
+        isHost = true;
+        
+        // 방 상태 구조 초기화 (status: waiting)
+        set(ref(rdb, `rooms/${roomId}/info`), {
+            host: myName,
+            status: "waiting"
+        });
+
+        document.getElementById('hostControlArea').style.display = 'block';
         joinRoomSequence(roomId);
     }
 
+    // 4. 방 참여 (내가 참가자)
     function joinRoom() {
         const codeInput = document.getElementById('roomCodeInput');
-        if(!codeInput.value.trim()) return alert("방 코드를 입력해주세요.");
+        if(!codeInput || !codeInput.value.trim()) return alert("방 코드를 입력해주세요.");
         currentRoomId = codeInput.value.trim();
+        isHost = false;
         joinRoomSequence(currentRoomId);
     }
 
+    // 5. 방 내부 동기화 시퀀스 및 이탈 차단 시스템
     function joinRoomSequence(roomId) {
         document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
+        
+        // [중요] 방에 한 번 진입하면 다른 방을 만들거나 참여 버튼을 누르지 못하도록 고정(Lock)
+        document.getElementById('btnCreateRoom').disabled = true;
+        document.getElementById('btnJoinRoom').disabled = true;
+        document.getElementById('roomCodeInput').disabled = true;
+
         const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
         
+        // 실시간 뽑기 스택 데이터 구조 전송
         set(myStatusRef, {
             name: myName,
-            pulls: globalStats.totalPulls,
-            constLevel: globalStats.pickupCount === -1 ? "미보유" : "C" + globalStats.pickupCount,
-            pity5: globalStats.pity5,
+            pulls: 0,
+            constLevel: "미보유",
+            pity5: 0,
             lastUpdate: Date.now()
         });
         onDisconnect(myStatusRef).remove();
 
-        const roomRef = ref(rdb, `rooms/${roomId}/users`);
-        onValue(roomRef, (snapshot) => {
+        // 방 전체 정보 관찰 리스너 (시작 여부 감시)
+        onValue(ref(rdb, `rooms/${roomId}/info`), (snapshot) => {
+            const info = snapshot.val();
+            if(!info) return;
+            
+            if(info.status === "playing" && !isGameStarted) {
+                isGameStarted = true;
+                document.getElementById('gameStatusAlert').innerText = "⚔️ 대결 진행 중! ⚔️";
+                document.getElementById('gameStatusAlert').style.color = "crimson";
+                const overlay = document.getElementById('gameStartOverlay');
+                if(overlay) overlay.remove();
+                
+                // 기원 버튼 잠금 해제 -> 이제 마저 뽑기 가능!
+                document.getElementById('btn1').disabled = false;
+                document.getElementById('btn10').disabled = false;
+            } else if(info.status === "waiting") {
+                document.getElementById('gameStatusAlert').innerText = "⏱️ 다른 유저 대기 중...";
+            }
+        });
+
+        // 👥 유저 목록 및 몇 뽑에 몇 스택인지 실시간 전광판 갱신
+        const roomUsersRef = ref(rdb, `rooms/${roomId}/users`);
+        onValue(roomUsersRef, (snapshot) => {
             const users = snapshot.val();
             const listContainer = document.getElementById('roomUserList');
+            if(!listContainer) return;
             listContainer.innerHTML = '';
+            
             if(!users) return;
             Object.keys(users).forEach(key => {
                 const user = users[key];
                 const item = document.createElement('div');
                 item.className = 'room-user-item';
                 const isUserMax = user.constLevel === "풀돌";
+                
+                // 전광판 화면 가독성 패치: 이름 [돌파상태] - OO뽑 (OO스택)
                 item.innerHTML = `
-                    <span style="${isUserMax ? 'color:var(--radiance); font-weight:bold;' : ''}">
-                        ${user.name} [${user.constLevel}]
+                    <span style="${isUserMax ? 'color:var(--radiance); font-weight:bold;' : 'color:#fff'}">
+                        👤 ${user.name} <b style="color:var(--gold)">[${user.constLevel}]</b>
                     </span>
-                    <span style="font-size:0.9em; color:#ccc;">
-                        ${user.pulls}뽑 (${user.pity5}스택)
+                    <span style="font-size:0.9em; color:#bbb;">
+                        ${user.pulls}뽑 <b style="color:var(--blue)">(${user.pity5}스택)</b>
                     </span>`;
                 listContainer.appendChild(item);
             });
         });
     }
 
+    // 방장 전용 시작 신호 전송 함수
+    function startGame() {
+        if(!isHost || !currentRoomId) return;
+        update(ref(rdb, `rooms/${currentRoomId}/info`), {
+            status: "playing"
+        });
+        document.getElementById('hostControlArea').style.display = 'none';
+    }
+
+    // 내 실시간 뽑기 스택 데이터를 서버로 즉시 업로드하는 함수
     function syncMultiplayerStatus() {
         if (!currentRoomId || !myName) return;
         const myStatusRef = ref(rdb, `rooms/${currentRoomId}/users/${myName}`);
@@ -287,6 +363,7 @@
         });
     }
 
+    // 풀돌 인증 및 기록 전송
     async function checkAndUploadC6() {
         if(globalStats.pickupCount >= 6 && !isFinishedC6) {
             isFinishedC6 = true;
@@ -303,6 +380,7 @@
         }
     }
 
+    // --- 시뮬레이터 내부 가동 메커니즘 엔진 ---
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
@@ -333,6 +411,7 @@
 
     function triggerFlash(color, opacity) {
         const flash = document.getElementById('flashOverlay');
+        if(!flash) return;
         flash.style.background = color;
         flash.style.opacity = opacity;
         flash.style.transition = 'none';
@@ -368,6 +447,7 @@
 
     function showCards(results, count) {
         const stage = document.getElementById('stage');
+        if(!stage) return;
         document.getElementById('btnSkip').style.display = 'block';
         results.forEach((res, i) => {
             const card = document.createElement('div');
@@ -388,12 +468,14 @@
 
     function flipCard(el, res) {
         const card = el.closest('.card');
-        if(card.classList.contains('flipped')) return;
+        if(!card || card.classList.contains('flipped')) return;
         card.classList.add('flipped');
+        
         globalStats.totalPulls++;
         if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
+        
         syncUI();
-        syncMultiplayerStatus();
+        syncMultiplayerStatus(); // 카드 뒤집을 때마다 내 스택 실시간 브로드캐스팅
         checkAndUploadC6();
         checkDone();
     }
@@ -406,7 +488,6 @@
         document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
         document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
         
-        // 데이터 안전성 검사 후 바인딩 (크래시 방지)
         const constEl = document.getElementById('dispConst');
         if (constEl) {
             constEl.innerText = globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount);
@@ -421,6 +502,7 @@
 
     function updateHistory(res) {
         const list = document.getElementById('historyList');
+        if(!list) return;
         const item = document.createElement('div');
         item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #222";
         const color = res.isRadiance ? 'var(--radiance)' : (res.isPickup ? 'var(--gold)' : '#888');
@@ -435,7 +517,11 @@
         const flipped = document.querySelectorAll('.card.flipped').length;
         if (total > 0 && total === flipped) {
             document.getElementById('btnSkip').style.display = 'none';
-            document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false;
+            // 게임이 이미 시작된 상태(playing)에서만 연속 기원 버튼 복구 활성화
+            if(isGameStarted) {
+                document.getElementById('btn1').disabled = false;
+                document.getElementById('btn10').disabled = false;
+            }
         }
     }
     syncUI();
