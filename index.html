@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기원 시뮬레이터 - 완성형 에디션</title>
+    <title>기원 시뮬레이터 - 완성형 에디션 (폴더 히스토리)</title>
     <script type="importmap">
         {
             "imports": {
@@ -25,7 +25,8 @@
         
         /* 🚪 초기 닉네임 설정 팝업 */
         .name-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 10, 21, 0.95); z-index: 2000;
             display: flex; justify-content: center; align-items: center;
         }
@@ -38,18 +39,21 @@
             width: 80%; background: #222; border: 1px solid #444; color: white;
             padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; margin-bottom: 20px;
         }
-        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em; background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
+        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em;
+            background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
 
         /* 🌠 C6 돌파 컷신 이펙트 레이어 */
         .c6-cutscene {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, rgba(12,20,40,1) 0%, rgba(3,5,15,1) 100%);
             z-index: 3000; display: none; justify-content: center; align-items: center;
             opacity: 0; transition: opacity 0.8s ease; flex-direction: column;
         }
         .const-vessel { position: relative; width: 400px; height: 400px; }
         .const-star {
-            position: absolute; width: 14px; height: 14px; background: #fff;
+            position: absolute;
+            width: 14px; height: 14px; background: #fff;
             border-radius: 50%; box-shadow: 0 0 15px #fff; opacity: 0; transform: scale(0);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -62,7 +66,7 @@
         .c6-subtitle { color: #aaa; margin-top: 8px; font-size: 1em; opacity: 0; }
         .c6-btn { margin-top: 30px; padding: 10px 30px; border-radius: 20px; background: transparent; color: white; border: 1px solid #666; cursor: pointer; opacity: 0; }
 
-        /* 🖥️ 격자 형태 메인 레이아웃 보완 (찌부러짐 방지) */
+        /* 🖥️ 격자 형태 메인 레이아웃 보완 */
         .wrapper { width: 100%; max-width: 1550px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         .main-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; width: 100%; align-items: start; }
         
@@ -77,7 +81,7 @@
         .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
         .stat b { font-size: 1.1em; color: var(--gold); }
 
-        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
+        /* 🌠 뽑기 스테이지 고정 스타일 */
         .wish-stage { 
             position: relative; width: 100%; min-height: 480px; height: 480px;
             background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
@@ -133,14 +137,18 @@
         .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
         .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2736; font-size: 0.9em; align-items: center; }
         
-        /* 🗂️ 캐릭터 도감 UI 디자인 */
+        /* 🗂️ 캐릭터 도감 내 '게임 기록 히스토리 폴더' UI 디자인 */
         .archive-panel { background: rgba(13, 18, 30, 0.95); border: 1px solid #2a3a50; border-radius: 15px; padding: 15px; width: 100%; box-sizing: border-box; }
-        .archive-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; min-height: 80px; }
-        .archive-card { width: 90px; height: 120px; border-radius: 8px; position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 8px; box-sizing: border-box; font-size: 0.75em; font-weight: bold; color: #111; border: 1px solid rgba(255,255,255,0.2); }
-        .arch-5 { background: linear-gradient(to top, #ffcc00, #fff); box-shadow: 0 0 10px rgba(255,204,0,0.4); }
-        .arch-rad { background: linear-gradient(to top, #ff4ef0, #fff); box-shadow: 0 0 12px rgba(255,78,240,0.5); }
-        .arch-badge { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: var(--gold); border-radius: 5px; padding: 1px 4px; font-size: 0.8em; }
-        .arch-stack { font-size: 0.8em; color: #555; margin-top: 2px; }
+        .archive-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; min-height: 80px; width: 100%; }
+        
+        .history-folder-box { background: #161d2a; border: 1px solid #2e3d56; border-radius: 10px; padding: 15px; width: 100%; box-sizing: border-box; }
+        .folder-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #3a4c66; padding-bottom: 8px; margin-bottom: 10px; }
+        .folder-title { color: var(--gold); font-weight: bold; font-size: 1.05em; }
+        .folder-meta { color: #778899; font-size: 0.85em; }
+        .folder-char-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .mini-char-card { color: #111; padding: 6px 10px; border-radius: 6px; font-size: 0.75em; font-weight: bold; position: relative; min-width: 85px; text-align: center; }
+        .mini-char-badge { position: absolute; top: -5px; right: -5px; background: #000; color: var(--gold); font-size: 0.7em; padding: 1px 4px; border-radius: 4px; }
+        .mini-char-stack { display: block; font-size: 0.85em; color: #555; font-weight: normal; }
 
         #gameStatusAlert { text-align: center; color: #5bc0de; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
         .nick-box-area { background: rgba(255, 204, 0, 0.05); border: 1px dashed var(--gold); padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -149,7 +157,7 @@
 <body>
 <div id="flashOverlay" class="flash-overlay"></div>
 
-<div id="nameModal" class="name-modal-overlay" style="display: none;">
+<div id="nameModal" class="name-modal-overlay">
     <div class="name-modal-box">
         <h3>🌌 여행자 등록</h3>
         <p style="font-size:0.85em; color:#aaa; margin-bottom:15px;">시뮬레이터에 사용할 닉네임을 적어주세요.</p>
@@ -161,9 +169,19 @@
 <div id="c6Cutscene" class="c6-cutscene">
     <div class="const-vessel">
         <svg class="const-svg">
-            <line id="line1" class="const-line" x1="200" y1="50" x2="320" y2="130" /><line id="line2" class="const-line" x1="320" y1="130" x2="290" y2="270" /><line id="line3" class="const-line" x1="290" y1="270" x2="110" y2="270" /><line id="line4" class="const-line" x1="110" y1="270" x2="80" y2="130" /><line id="line5" class="const-line" x1="80" y1="130" x2="200" y2="50" /><line id="line6" class="const-line" x1="200" y1="50" x2="200" y2="200" />
+            <line id="line1" class="const-line" x1="200" y1="50" x2="320" y2="130" />
+            <line id="line2" class="const-line" x1="320" y1="130" x2="290" y2="270" />
+            <line id="line3" class="const-line" x1="290" y1="270" x2="110" y2="270" />
+            <line id="line4" class="const-line" x1="110" y1="270" x2="80" y2="130" />
+            <line id="line5" class="const-line" x1="80" y1="130" x2="200" y2="50" />
+            <line id="line6" class="const-line" x1="200" y1="50" x2="200" y2="200" />
         </svg>
-        <div id="star1" class="const-star" style="top:43px; left:193px;"></div><div id="star2" class="const-star" style="top:123px; left:313px;"></div><div id="star3" class="const-star" style="top:263px; left:283px;"></div><div id="star4" class="const-star" style="top:263px; left:103px;"></div><div id="star5" class="const-star" style="top:123px; left:73px;"></div><div id="star6" class="const-star" style="top:193px; left:193px;"></div>
+        <div id="star1" class="const-star" style="top:43px; left:193px;"></div>
+        <div id="star2" class="const-star" style="top:123px; left:313px;"></div>
+        <div id="star3" class="const-star" style="top:263px; left:283px;"></div>
+        <div id="star4" class="const-star" style="top:263px; left:103px;"></div>
+        <div id="star5" class="const-star" style="top:123px; left:73px;"></div>
+        <div id="star6" class="const-star" style="top:193px; left:193px;"></div>
     </div>
     <div id="c6Title" class="c6-title">운명의 자리 6단계 돌파</div>
     <div id="c6Subtitle" class="c6-subtitle">축하합니다! 캐릭터 풀돌(C6)을 완성했습니다.</div>
@@ -193,8 +211,8 @@
             </div>
             
             <div class="controls">
-                <button id="btn1" onclick="handleWish(1)">1회 기원</button>
-                <button id="btn10" onclick="handleWish(10)">10회 기원</button>
+                <button id="btn1" onclick="handleWish(1)" disabled>1회 기원</button>
+                <button id="btn10" onclick="handleWish(10)" disabled>10회 기원</button>
                 <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
             </div>
         </div>
@@ -209,7 +227,7 @@
                 </div>
                 
                 <div class="input-group" id="roomControls">
-                    <button id="btnCreateRoom" onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
+                    <button id="btnCreateRoom" onclick="createRoom()">방 생성</button>
                     <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
                     <button id="btnJoinRoom" onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
                 </div>
@@ -247,18 +265,18 @@
 
     <div class="archive-panel">
         <h4 style="margin:0 0 5px 0; color:var(--gold); display:flex; justify-content:space-between;">
-            <span>🗂️ 여행자 캐릭터 도감 (5성 보유고)</span>
-            <span style="font-size:0.8em; color:#888;">획득한 고등급 한정/상시 캐릭터들이 누적 기록됩니다.</span>
+            <span>🗂️ 여행자 아카이브 (역대 플레이 기록 폴더)</span>
+            <span style="font-size:0.8em; color:#888;">풀돌(C6)을 완성할 때마다 독립된 판의 기록이 하나의 폴더처럼 누적되어 보존됩니다.</span>
         </h4>
         <div id="archiveGrid" class="archive-grid">
-            <div style="color:#555; font-size:0.9em; padding:20px 0;">아직 5성 캐릭터를 획득하지 못했습니다. 기원을 시작해 보세요!</div>
+            <div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요!</div>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs } from "firebase/firestore";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, where, deleteDoc } from "firebase/firestore";
     import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
 
     const firebaseConfig = {
@@ -275,16 +293,19 @@
     const db = getFirestore(app);
     const rdb = getDatabase(app);
 
-    let savedStats = JSON.parse(localStorage.getItem('genshin_sim_stats'));
-    let globalStats = savedStats || { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-    let savedArchive = JSON.parse(localStorage.getItem('genshin_sim_archive')) || [];
+    // 💾 요구사항: 새로고침 시 현재 진행 상태는 초기화되지만, 완료된 '이전 판들의 폴더' 히스토리는 로컬 저장소에서 안전하게 불러옴
+    let historyFolders = JSON.parse(localStorage.getItem('genshin_sim_folders')) || [];
+
+    // 현재 판(세션) 데이터 정의 및 초기화
+    let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
+    let savedArchive = []; // 이번 판에서 뽑은 5성 목록 데이터
     
     const COST_PER_PULL = 2410;
     const CHICKEN_PRICE = 20000;
     
     let myName = localStorage.getItem('genshin_sim_name') || "";
     let currentRoomId = null;
-    let isFinishedC6 = globalStats.pickupCount >= 6; 
+    let isFinishedC6 = false; 
     let isHost = false;
     let isMultiplayerMode = false;
     let isGameStarted = true;
@@ -307,15 +328,10 @@
             document.getElementById('btn1').disabled = false;
             document.getElementById('btn10').disabled = false;
             syncUI();
-            renderArchive();
+            renderArchiveFolders(); // 도감을 하나의 통합 폴더 리스트 형태로 렌더링
             calculateMyRank();
         }
     };
-
-    function saveToLocalStorage() {
-        localStorage.setItem('genshin_sim_stats', JSON.stringify(globalStats));
-        localStorage.setItem('genshin_sim_archive', JSON.stringify(savedArchive));
-    }
 
     function submitInitialName() {
         const input = document.getElementById('modalNameInput');
@@ -327,7 +343,7 @@
         document.getElementById('btn1').disabled = false;
         document.getElementById('btn10').disabled = false;
         syncUI();
-        renderArchive();
+        renderArchiveFolders();
     }
 
     function changeNickname() {
@@ -335,9 +351,121 @@
         if(!newName) return alert("이름은 공백일 수 없습니다.");
         myName = newName;
         localStorage.setItem('genshin_sim_name', myName);
-        alert("닉네임이 성공적으로 변경되었습니다!");
+        alert("닉네임이 성공적으로 변경되었습니다! (이후 완료 폴더 이름에 반영됩니다)");
         syncMultiplayerStatus();
         calculateMyRank();
+    }
+
+    // 🔥 [수정 핵심] 닉네임이 같을 때 오직 더 적은 원석을 쓴 최고 기록만 랭킹에 남김
+    async function checkAndUploadC6() {
+        if(globalStats.pickupCount >= 6 && !isFinishedC6) {
+            isFinishedC6 = true;
+            playC6Cutscene();
+
+            // 한 게임이 종료될 때 현재 판의 데이터를 아카이브 폴더 규격에 맞춰 저장
+            saveCurrentGameToFolder();
+
+            const myUsedGems = globalStats.totalPulls * 160;
+            try {
+                // 1. 현재 입력한 내 닉네임과 동일한 랭킹 도큐먼트 조회
+                const q = query(collection(db, "c6_rankings"), where("name", "==", myName));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    // 2. 이미 등록된 데이터가 있을 경우 기존 기록과 매칭
+                    let existingDoc = querySnapshot.docs[0];
+                    let existingGems = existingDoc.data().usedGems;
+
+                    // 새로운 기록이 기존 기록보다 더 적은 원석을 사용한 우수한 기록일 경우에만 교체 작업 수행
+                    if (myUsedGems < existingGems) {
+                        // 기존의 떨어지는 기록 도큐먼트 파괴
+                        await deleteDoc(existingDoc.ref);
+                        // 최신 스펙의 고성능 기록으로 전당에 등재
+                        await addDoc(collection(db, "c6_rankings"), { 
+                            name: myName, 
+                            pulls: globalStats.totalPulls, 
+                            usedGems: myUsedGems, 
+                            timestamp: Date.now() 
+                        });
+                    }
+                } else {
+                    // 3. 기존에 박제된 같은 이름의 기록이 아예 없는 신규 유저라면 즉시 등재
+                    await addDoc(collection(db, "c6_rankings"), { 
+                        name: myName, 
+                        pulls: globalStats.totalPulls, 
+                        usedGems: myUsedGems, 
+                        timestamp: Date.now() 
+                    });
+                }
+            } catch (e) { console.error("명예의 전당 필터 기록 검증 도중 치명적 오류 발생:", e); }
+        }
+    }
+
+    // 📁 [추가 기능] 한 세션의 뽑기 정보를 하나의 패키지 폴더 형태로 밀봉해 영구 누적
+    function saveCurrentGameToFolder() {
+        const totalWon = globalStats.totalPulls * COST_PER_PULL;
+        const newFolder = {
+            gameId: "GAME-" + Date.now(),
+            playerName: myName || "무명 여행자",
+            totalPulls: globalStats.totalPulls,
+            totalGems: globalStats.totalPulls * 160,
+            totalWon: totalWon,
+            chickenCount: (totalWon / CHICKEN_PRICE).toFixed(1),
+            date: new Date().toLocaleDateString(),
+            characters: [...savedArchive] // 해당 판의 모든 5성 카드 배열 완벽 카피
+        };
+        
+        historyFolders.unshift(newFolder); // 최신 폴더가 제일 위단에 배치되도록 추가
+        localStorage.setItem('genshin_sim_folders', JSON.stringify(historyFolders));
+        renderArchiveFolders();
+    }
+
+    // 🗺️ [도감 뷰 교체] 단순 5성 카드를 길게 늘어놓는 구조에서 독립된 판을 묶은 '폴더 히스토리' 뷰로 전면 전개
+    function renderArchiveFolders() {
+        const grid = document.getElementById('archiveGrid');
+        if(!grid) return;
+        grid.innerHTML = '';
+
+        if(historyFolders.length === 0) {
+            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요!</div>`;
+            return;
+        }
+
+        historyFolders.forEach((folder, idx) => {
+            const folderWrapper = document.createElement('div');
+            folderWrapper.className = 'history-folder-box';
+
+            // 폴더 상단 메타 헤더 렌더링
+            let headerHtml = `
+                <div class="folder-header">
+                    <span class="folder-title">📁 플레이 기록 폴더 #${historyFolders.length - idx} (${folder.playerName})</span>
+                    <span class="folder-meta">📅 달성일: ${folder.date} | 📊 결과: <b>${folder.totalPulls}</b>뽑 (₩${folder.totalWon.toLocaleString()})</span>
+                </div>
+            `;
+
+            // 폴더 내부에 속해 있는 5성 전유물들 가로 배치 목록 작성
+            let charListHtml = `<div class="folder-char-list">`;
+            let pCount = -1;
+            
+            folder.characters.forEach(char => {
+                let cLabel = "";
+                if(char.isPickup) {
+                    pCount++;
+                    cLabel = pCount >= 6 ? "풀돌" : "C" + pCount;
+                }
+                charListHtml += `
+                    <div class="mini-char-card" style="background:${char.isRadiance ? 'linear-gradient(to top, #ff4ef0, #fff)' : 'linear-gradient(to top, #ffcc00, #fff)'};">
+                        ${char.name}
+                        <span class="mini-char-stack">${char.stack}스택</span>
+                        ${char.isPickup ? `<span class="mini-char-badge">${cLabel}</span>` : ''}
+                    </div>
+                `;
+            });
+            charListHtml += `</div>`;
+
+            folderWrapper.innerHTML = headerHtml + charListHtml;
+            grid.appendChild(folderWrapper);
+        });
     }
 
     async function calculateMyRank() {
@@ -365,13 +493,20 @@
             if(!rankList) return;
             rankList.innerHTML = '';
             let rank = 1;
+            
+            // 데이터베이스 상의 동기화 불일치를 한 번 더 클라이언트단에서 안전 중복 제거 검사
+            let seenNames = new Set();
+            
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const item = document.createElement('div');
-                item.className = 'room-user-item';
-                item.innerHTML = `<span><b>${rank}위.</b> ${data.name}</span><span style="color:var(--gold)">${data.usedGems.toLocaleString()}개 (${data.pulls}뽑)</span>`;
-                rankList.appendChild(item);
-                rank++;
+                if(!seenNames.has(data.name)){
+                    seenNames.add(data.name);
+                    const item = document.createElement('div');
+                    item.className = 'room-user-item';
+                    item.innerHTML = `<span><b>${rank}위.</b> ${data.name}</span><span style="color:var(--gold)">${data.usedGems.toLocaleString()}개 (${data.pulls}뽑)</span>`;
+                    rankList.appendChild(item);
+                    rank++;
+                }
             });
             if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요!</div>`;
             calculateMyRank();
@@ -416,7 +551,6 @@
         const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
         set(myStatusRef, { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() });
         onDisconnect(myStatusRef).remove();
-
         onValue(ref(rdb, `rooms/${roomId}/info`), (snapshot) => {
             const info = snapshot.val(); if(!info) return;
             if(info.status === "playing" && !isGameStarted) {
@@ -427,7 +561,6 @@
                 document.getElementById('multiNoticeOverlay').style.display = 'none';
             }
         });
-
         onValue(ref(rdb, `rooms/${roomId}/users`), (snapshot) => {
             const users = snapshot.val(); const listContainer = document.getElementById('roomUserList');
             if(!listContainer || !users) return; listContainer.innerHTML = '';
@@ -458,16 +591,6 @@
     }
     function closeC6Cutscene() { const overlay = document.getElementById('c6Cutscene'); overlay.style.opacity = '0'; setTimeout(() => overlay.style.display = 'none', 800); }
 
-    async function checkAndUploadC6() {
-        if(globalStats.pickupCount >= 6 && !isFinishedC6) {
-            isFinishedC6 = true;
-            playC6Cutscene();
-            try {
-                await addDoc(collection(db, "c6_rankings"), { name: myName || "무명 여행자", pulls: globalStats.totalPulls, usedGems: globalStats.totalPulls * 160, timestamp: Date.now() });
-            } catch (e) { console.error(e); }
-        }
-    }
-
     function handleWish(count) {
         const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
         const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
@@ -484,7 +607,6 @@
         const star = document.createElement('div');
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
         effectLayer.appendChild(star);
-
         if (maxRank >= 4) {
             setTimeout(() => {
                 stage.classList.add('stage-dimmed');
@@ -497,13 +619,13 @@
 
         if (maxRank === 4) setTimeout(() => triggerFlash('#bf40ff', 0.4), 1400);
         else if (maxRank === 5 || hasRad) setTimeout(() => triggerFlash('#ffffff', 0.8), 1650);
-
         const animTimes = { 'star-3': 2000, 'star-4': 3500, 'star-5': 4200, 'star-rad': 5500 };
         setTimeout(() => showCards(results, count), (hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank]) + 100);
     }
 
     function triggerFlash(color, opacity) {
-        const flash = document.getElementById('flashOverlay'); if(!flash) return;
+        const flash = document.getElementById('flashOverlay');
+        if(!flash) return;
         flash.style.background = color; flash.style.opacity = opacity; flash.style.transition = 'none';
         setTimeout(() => { flash.style.transition = 'opacity 0.6s ease-out'; flash.style.opacity = 0; }, 50);
     }
@@ -512,9 +634,9 @@
         let res = { rank: 3, name: "3성 무기", isRadiance: false, stack: 0, isPickup: false, constLevel: "" };
         let chance = 0.6 + (globalStats.pity5 >= 74 ? (globalStats.pity5 - 73) * 6 : 0);
         globalStats.pity5++; globalStats.totalPulls++; globalStats.pity4++;
-        
         if (Math.random() * 100 < chance || globalStats.pity5 >= 90) {
-            res.rank = 5; res.stack = globalStats.pity5;
+            res.rank = 5;
+            res.stack = globalStats.pity5;
             let win = false;
             if (globalStats.isGuaranteed) { win = true; globalStats.isGuaranteed = false; }
             else {
@@ -528,56 +650,25 @@
             res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
             globalStats.pity5 = 0;
             
-            pushToArchive(res);
+            // 이번 세션 임시 배열에 기록 누적
+            savedArchive.push({
+                name: res.name,
+                rank: res.rank,
+                isRadiance: res.isRadiance,
+                isPickup: res.isPickup,
+                stack: res.stack,
+                timestamp: Date.now()
+            });
         } else if (Math.random() * 100 < 5.1 || globalStats.pity4 >= 10) {
-            res.rank = 4; res.name = "4성 캐릭터"; globalStats.pity4 = 0;
+            res.rank = 4;
+            res.name = "4성 캐릭터"; globalStats.pity4 = 0;
         }
         return res;
     }
 
-    function pushToArchive(res) {
-        savedArchive.push({
-            name: res.name,
-            rank: res.rank,
-            isRadiance: res.isRadiance,
-            isPickup: res.isPickup,
-            stack: res.stack,
-            timestamp: Date.now()
-        });
-        saveToLocalStorage();
-    }
-
-    function renderArchive() {
-        const grid = document.getElementById('archiveGrid');
-        if(!grid) return;
-        grid.innerHTML = '';
-        
-        let pickupTotal = -1;
-        if(savedArchive.length === 0) {
-            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 5성 캐릭터를 획득하지 못했습니다. 기원을 시작해 보세요!</div>`;
-            return;
-        }
-
-        savedArchive.forEach(item => {
-            let currentConst = "";
-            if(item.isPickup) {
-                pickupTotal++;
-                currentConst = pickupTotal >= 6 ? "풀돌" : "C" + pickupTotal;
-            }
-            
-            const card = document.createElement('div');
-            card.className = `archive-card arch-${item.isRadiance ? 'rad' : '5'}`;
-            card.innerHTML = `
-                ${item.isPickup ? `<div class="arch-badge">${currentConst}</div>` : ''}
-                <div style="text-align:center; padding: 0 4px;">${item.name}</div>
-                <div class="arch-stack">${item.stack}스택</div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
     function showCards(results, count) {
-        const stage = document.getElementById('stage'); if(!stage) return;
+        const stage = document.getElementById('stage');
+        if(!stage) return;
         document.getElementById('btnSkip').style.display = 'block';
         results.forEach((res, i) => {
             const card = document.createElement('div'); card.className = `card`;
@@ -596,12 +687,12 @@
     }
 
     function flipCard(el, res) {
-        const card = el.closest('.card'); if(!card || card.classList.contains('flipped')) return;
+        const card = el.closest('.card');
+        if(!card || card.classList.contains('flipped')) return;
         card.classList.add('flipped');
         
-        if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); renderArchive(); }
+        if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
         
-        saveToLocalStorage();
         syncUI();
         syncMultiplayerStatus();
         checkAndUploadC6();
@@ -616,15 +707,17 @@
         document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
         document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
         document.getElementById('dispConst').innerText = getConstLabel();
-        
         if(globalStats.results5.length > 0) {
             const avg = globalStats.results5.reduce((a, b) => a + b.stack, 0) / globalStats.results5.length;
             document.getElementById('anaAvg').innerText = avg.toFixed(1);
+        } else {
+            document.getElementById('anaAvg').innerText = "0";
         }
     }
 
     function updateHistory(res) {
-        const list = document.getElementById('historyList'); if(!list) return;
+        const list = document.getElementById('historyList');
+        if(!list) return;
         const item = document.createElement('div'); item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #1f2736";
         const color = res.isRadiance ? 'var(--radiance)' : (res.isPickup ? 'var(--gold)' : '#888');
         item.innerHTML = `<span style="color:${color}">${res.name}${res.isPickup ? ' ['+res.constLevel+']' : ''}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
