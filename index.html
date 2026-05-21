@@ -332,8 +332,6 @@
 
     window.onload = function() {
         // 🔄 새로고침 완료 시 항상 이름 입력 모달이 대기하고 있도록 보장
-        localStorage.clear(); // 페이지 새로고침 시 데이터 초기화
-        document.getElementById('nameModal').style.display = 'flex';
         document.getElementById('nameModal').style.display = 'flex';
         document.getElementById('editNickInput').value = "로딩 중...";
         document.getElementById('btn1').disabled = true;
@@ -371,49 +369,28 @@ const resonance = {
     "종려": { e: "effect-zhongli" }, "Zhongli": { e: "effect-zhongli" }
 };
 
-window.submitInitialName = function() {
-        const input = document.getElementById('modalNameInput');
-        const val = input.value.trim();
-        if(!val) return showToast("이름을 입력해주세요!");
+function submitInitialName() {
+    const input = document.getElementById('modalNameInput');
+    if(!input || !input.value.trim()) return showToast("사용할 이름을 입력해 주세요!");
+    
+    myName = input.value.trim();
+    
+    // 이스터에그 체크
+    if (resonance[myName]) {
+        document.body.className = resonance[myName].e;
+        showToast(`원소 공명 발생! ${myName}의 강력한 이펙트가 활성화됩니다!`);
+    } else {
+        document.body.className = '';
+    }
 
-        const resonance = {
-            "라이덴": "raiden", "Raiden": "raiden",
-            "나히다": "nahida", "Nahida": "nahida",
-            "푸리나": "furina", "Furina": "furina",
-            "느비예트": "neuvillette", "Neuvillette": "neuvillette",
-            "종려": "zhongli", "Zhongli": "zhongli"
-        };
-
-        myName = val;
-        // 기존 닉네임 수정창 ID(예: editNickInput)에 현재 이름 반영
-        const nickInput = document.getElementById('editNickInput');
-        if(nickInput) nickInput.value = myName;
-
-        // 이스터에그 체크 및 잠금 처리
-        if (resonance[val]) {
-            window.activeBuff = resonance[val];
-            document.body.className = `effect-${resonance[val]}`;
-            
-            // 이름 잠금 처리
-            if (nickInput) {
-                nickInput.readOnly = true;
-                nickInput.style.border = "1px solid var(--gold)";
-            }
-            showToast(`${val}의 공명 활성화! 이름이 고정됩니다.`);
-        } else {
-            window.activeBuff = null;
-            document.body.className = '';
-            // 일반 이름은 자유롭게 수정 가능
-            if (nickInput) {
-                nickInput.readOnly = false;
-                nickInput.style.border = "1px solid #444";
-            }
-        }
-
-        document.getElementById('nameModal').style.display = 'none';
-        syncUI();
-        renderArchiveFolders();
-    };
+    document.getElementById('editNickInput').value = myName;
+    document.getElementById('nameModal').style.display = 'none';
+    document.getElementById('btn1').disabled = false;
+    document.getElementById('btn10').disabled = false;
+    syncUI();
+    renderArchiveFolders();
+    showToast(`어서와, ${myName}! 행운이 가득하길 바랄게! 🍀`);
+}
 
     function changeNickname() {
         const newName = document.getElementById('editNickInput').value.trim();
