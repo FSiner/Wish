@@ -1,778 +1,263 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기원</title>
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js",
-                "firebase/database": "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"
-            }
-        }
-    </script>
-    <style>
-        :root { 
-            --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
-            --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
-        }
-        body { 
-            background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; 
-            margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box;
-            display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
-        }
-        
-        /* 🚪 초기 닉네임 설정 팝업 (새로고침 시 무조건 등장!) */
-        .name-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 10, 21, 0.95); z-index: 2000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .name-modal-box {
-            background: #111827; border: 2px solid var(--gold); padding: 30px;
-            border-radius: 20px; text-align: center; width: 350px;
-            box-shadow: 0 0 30px rgba(255, 204, 0, 0.2);
-        }
-        .name-modal-box input {
-            width: 80%; background: #222; border: 1px solid #444; color: white;
-            padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; margin-bottom: 20px;
-        }
-        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em; background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기원</title>
+<style>
+    /* 기본 배경 및 레이아웃 */
+    body {
+        background-color: #1a1a2e;
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 20px;
+    }
 
-        /* 🌠 C6 돌파 컷신 이펙트 레이어 */
-        .c6-cutscene {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(12,20,40,1) 0%, rgba(3,5,15,1) 100%);
-            z-index: 3000; display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.8s ease; flex-direction: column;
-        }
-        .const-vessel { position: relative; width: 400px; height: 400px; }
-        .const-star {
-            position: absolute; width: 14px; height: 14px; background: #fff;
-            border-radius: 50%; box-shadow: 0 0 15px #fff; opacity: 0; transform: scale(0);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .const-star.active { opacity: 1; transform: scale(1); background: var(--gold); box-shadow: 0 0 25px var(--gold); }
-        .const-svg { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
-        .const-line { stroke: rgba(255, 204, 0, 0.2); stroke-width: 2; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
-        .const-line.draw { animation: drawLine 0.6s linear forwards; stroke: var(--gold); filter: drop-shadow(0 0 5px var(--gold)); }
-        @keyframes drawLine { to { stroke-dashoffset: 0; } }
-        .c6-title { font-size: 2.2em; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px var(--gold); margin-top: 30px; opacity: 0; transform: translateY(20px); }
-        .c6-subtitle { color: #aaa; margin-top: 8px; font-size: 1em; opacity: 0; }
-        .c6-btn { margin-top: 30px; padding: 10px 30px; border-radius: 20px; background: transparent; color: white; border: 1px solid #666; cursor: pointer; opacity: 0; }
+    /* 버튼 스타일 */
+    .btn-group {
+        position: relative;
+        z-index: 20;
+        margin-bottom: 30px;
+    }
+    button {
+        background: #e9e5dc;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 10px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    button:disabled { background: #555; color: #888; cursor: not-allowed; }
+    button:hover:not(:disabled) { transform: scale(1.05); }
 
-        /* 🖥️ 격자 형태 메인 레이아웃 보완 */
-        .wrapper { width: 100%; max-width: 1550px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .main-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; width: 100%; align-items: start; }
-        
-        .container { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .side-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        
-        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #232d3f; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; box-sizing: border-box; }
-        .history-list, .rank-list, .room-user-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; max-height: 160px; min-height: 120px; padding-right: 5px; }
+    /* 연출 레이어 및 무대 */
+    #effect-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+    #stage { 
+        display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; 
+        max-width: 800px; margin: 0 auto; position: relative; z-index: 15; 
+        transition: opacity 0.5s;
+    }
+    .stage-dimmed { opacity: 0.3; }
+    #stage-placeholder { color: #888; font-size: 1.2em; padding: 50px; }
 
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
-        .stat { background: rgba(26, 29, 40, 0.8); padding: 12px 8px; border-radius: 12px; border: 1px solid #253147; text-align: center; box-sizing: border-box; }
-        .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
-        .stat b { font-size: 1.1em; color: var(--gold); }
+    /* 카드 스타일 및 애니메이션 */
+    .card {
+        width: 120px; height: 180px;
+        perspective: 1000px; /* 3D 효과를 위한 원근감 */
+        opacity: 0; transform: translateY(30px) scale(0.9);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .card.active { opacity: 1; transform: translateY(0) scale(1); }
+    
+    .card-inner {
+        width: 100%; height: 100%;
+        position: relative;
+        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
 
-        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
-        .wish-stage { 
-            position: relative; width: 100%; min-height: 480px; height: 480px;
-            background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
-            border-radius: 20px; display: flex; justify-content: center; align-items: center; 
-            gap: 10px; padding: 20px; border: 1px solid #253346; overflow: hidden; box-sizing: border-box;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
-        }
-        
-        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
-        
-        /* 🌠 충격파 및 암전 연출 */
-        .shockwave-impact { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 150; }
-        .wave-4 { border: 6px solid var(--purple); box-shadow: 0 0 50px var(--purple), inset 0 0 30px var(--purple); animation: explode-wave 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        .wave-5 { border: 8px solid var(--gold); box-shadow: 0 0 100px var(--gold), inset 0 0 50px var(--gold); animation: explode-wave 1.0s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        .wave-rad { border: 10px solid var(--radiance); box-shadow: 0 0 120px var(--radiance), inset 0 0 60px var(--radiance); animation: explode-wave 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-        @keyframes explode-wave { 0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); border-width: 10px; } 100% { width: 1200px; height: 1200px; opacity: 0; transform: translate(-50%, -50%) scale(1); border-width: 1px; } }
-        .stage-dimmed { transition: background 0.1s ease-in; background: radial-gradient(circle at center, #020408 0%, #000000 100%) !important; }
+    .card-front, .card-back {
+        width: 100%; height: 100%;
+        position: absolute; top: 0; left: 0;
+        backface-visibility: hidden;
+        border-radius: 8px;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    
+    .card-back {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        border: 2px solid #5da5e8;
+        cursor: pointer; /* 클릭 유도 */
+    }
+    .card-back::after { content: "Click!"; font-size: 0.8em; color: rgba(255,255,255,0.7); }
+    
+    .card-front {
+        transform: rotateY(180deg);
+        color: #333; font-weight: bold; padding: 10px; box-sizing: border-box; text-align: center;
+    }
 
-        .shooting-star { width: 20px; height: 600px; position: absolute; top: -700px; left: -10%; border-radius: 100px; opacity: 0; transform: rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; z-index: 200; }
-        .star-3 { animation: genshin-fall-3 2.0s ease-in-out forwards; }
-        .star-4 { animation: genshin-fall-4 3.5s ease-in-out forwards; }
-        .star-5 { animation: genshin-fall-5 4.2s ease-in-out forwards; }
-        .star-rad { animation: genshin-fall-rad 5.5s ease-in-out forwards; }
+    /* 등급별 카드 색상 */
+    .res-3 { background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; }
+    .res-4 { background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; }
+    .res-5 { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); color: #555; }
+    .res-rad { background: linear-gradient(135deg, #ff7675, #d63031); color: white; box-shadow: 0 0 15px #d63031;}
 
-        @keyframes genshin-fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-4 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 200px 30px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-5 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 350px 60px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 40px var(--gold); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
-        @keyframes genshin-fall-rad { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 400px 80px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 60px var(--radiance); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+    /* 유성 애니메이션 (단순화된 예시) */
+    .shooting-star {
+        position: absolute; top: -10%; left: 50%;
+        width: 8px; height: 8px; border-radius: 50%; background: white;
+        box-shadow: 0 0 20px 5px white;
+        animation: fall 1s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+    .star-4 { background: #a29bfe; box-shadow: 0 0 20px 5px #a29bfe; }
+    .star-5 { background: #fdcb6e; box-shadow: 0 0 20px 5px #fdcb6e; }
+    .star-rad { background: #ff7675; box-shadow: 0 0 20px 5px #ff7675; animation-duration: 1.5s; }
+    
+    @keyframes fall {
+        0% { transform: translate(0, 0) scale(1); opacity: 1; }
+        100% { transform: translate(-200px, 600px) scale(0); opacity: 0; }
+    }
 
-        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
-
-        /* 카드 UI 스타일 */
-        .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
-        .card.active { opacity: 1; transition: 0.15s ease-out; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.25s; transform-style: preserve-3d; }
-        .card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .card-back { background: #1e2230; border: 1px solid #334460; }
-        .card-front { transform: rotateY(180deg); color: #000; font-weight: bold; text-align: center; display: flex; flex-direction: column; justify-content: center; font-size: 0.8em; }
-        .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 20px #ffcc00; }
-        .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 30px #ff4ef0; }
-        .res-4 { background: linear-gradient(145deg, #bf40ff, #fff); }
-        .res-3 { background: #3d4a5d; color: white; }
-
-        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 5px; width: 100%; }
-        button { padding: 12px 30px; border: none; border-radius: 50px; font-weight: bold; font-size: 1em; cursor: pointer; background: var(--gold); color:#111; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s; }
-        button:active { transform: scale(0.96); }
-        button:disabled { background: #333 !important; color: #777 !important; cursor: not-allowed; box-shadow: none; }
-        .btn-skip { background: #222530; color: white; border: 1px solid #445; display: none; }
-        
-        .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
-        .input-group input { flex: 1; background: #1a1f2c; border: 1px solid #3a4b66; color: white; padding: 8px; border-radius: 5px; font-size: 0.85em; }
-        .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
-        .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2736; font-size: 0.9em; align-items: center; }
-        
-        /* 🗂️ 캐릭터 도감 내 '게임 기록 히스토리 폴더' UI 디자인 */
-        .archive-panel { background: rgba(13, 18, 30, 0.95); border: 1px solid #2a3a50; border-radius: 15px; padding: 15px; width: 100%; box-sizing: border-box; }
-        .archive-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; min-height: 80px; width: 100%; }
-        
-        .history-folder-box { background: #161d2a; border: 1px solid #2e3d56; border-radius: 10px; padding: 15px; width: 100%; box-sizing: border-box; }
-        .folder-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #3a4c66; padding-bottom: 8px; margin-bottom: 10px; }
-        .folder-title { color: var(--gold); font-weight: bold; font-size: 1.05em; }
-        .folder-meta { color: #778899; font-size: 0.85em; }
-        .folder-char-list { display: flex; flex-wrap: wrap; gap: 10px; }
-        .mini-char-card { color: #111; padding: 6px 10px; border-radius: 6px; font-size: 0.75em; font-weight: bold; position: relative; min-width: 85px; text-align: center; }
-        .mini-char-badge { position: absolute; top: -5px; right: -5px; background: #000; color: var(--gold); font-size: 0.7em; padding: 1px 4px; border-radius: 4px; }
-        .mini-char-stack { display: block; font-size: 0.85em; color: #555; font-weight: normal; }
-
-        #gameStatusAlert { text-align: center; color: #5bc0de; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
-        .nick-box-area { background: rgba(255, 204, 0, 0.05); border: 1px dashed var(--gold); padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-
-        /* 🔔 고급스러운 커스텀 알림 토스트 UI */
-        .toast-container {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
-        }
-        .custom-toast {
-            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--gold);
-            color: white; padding: 12px 24px; border-radius: 10px; font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9em;
-        }
-        .custom-toast.show { opacity: 1; transform: translateY(0); }
-        /* 캐릭터별 원소 폭발 효과 */
-.effect-raiden { background: radial-gradient(circle, #4c1d95, #000) !important; animation: lightning 0.5s infinite; }
-@keyframes lightning { 0% { filter: brightness(1); } 50% { filter: brightness(2) hue-rotate(20deg); } }
-.effect-nahida { background: radial-gradient(circle, #064e3b, #000) !important; border: 5px solid #34d399; }
-.effect-furina { background: radial-gradient(circle, #1e3a8a, #000) !important; animation: wave 2s infinite ease-in-out; }
-@keyframes wave { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
-.effect-neuvillette { background: linear-gradient(to bottom, #1e40af, #000) !important; }
-.effect-zhongli { background: radial-gradient(circle, #78350f, #000) !important; animation: shake 0.3s infinite; }
-@keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
-    </style>
+    /* 플래시 효과 레이어 */
+    #flash-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 30;
+    }
+</style>
 </head>
 <body>
-<div id="flashOverlay" class="flash-overlay"></div>
-<div id="toastContainer" class="toast-container"></div>
 
-<div id="nameModal" class="name-modal-overlay">
-    <div class="name-modal-box">
-        <h3>🌌 여행자 등록</h3>
-        <p style="font-size:0.85em; color:#aaa; margin-bottom:15px;">시뮬레이터에 사용할 닉네임을 적어주세요.</p>
-        <input type="text" id="modalNameInput" placeholder="닉네임 입력" maxlength="12" onkeydown="if(event.key === 'Enter') submitInitialName()">
-        <button onclick="submitInitialName()">진입하기</button>
-    </div>
+<div id="flash-overlay"></div>
+
+<div class="btn-group">
+    <button id="btn1">1회 기원</button>
+    <button id="btn10">10회 기원</button>
+    <button id="btnSkip" style="display:none; background:#ff7675; color:white;">스킵</button>
 </div>
 
-<div id="c6Cutscene" class="c6-cutscene">
-    <div class="const-vessel">
-        <svg class="const-svg">
-            <line id="line1" class="const-line" x1="200" y1="50" x2="320" y2="130" /><line id="line2" class="const-line" x1="320" y1="130" x2="290" y2="270" /><line id="line3" class="const-line" x1="290" y1="270" x2="110" y2="270" /><line id="line4" class="const-line" x1="110" y1="270" x2="80" y2="130" /><line id="line5" class="const-line" x1="80" y1="130" x2="200" y2="50" /><line id="line6" class="const-line" x1="200" y1="50" x2="200" y2="200" />
-        </svg>
-        <div id="star1" class="const-star" style="top:43px; left:193px;"></div><div id="star2" class="const-star" style="top:123px; left:313px;"></div><div id="star3" class="const-star" style="top:263px; left:283px;"></div><div id="star4" class="const-star" style="top:263px; left:103px;"></div><div id="star5" class="const-star" style="top:123px; left:73px;"></div><div id="star6" class="const-star" style="top:193px; left:193px;"></div>
-    </div>
-    <div id="c6Title" class="c6-title">운명의 자리 6단계 돌파</div>
-    <div id="c6Subtitle" class="c6-subtitle">축하합니다! 캐릭터 풀돌(C6)을 완성했습니다.</div>
-    <button id="c6CloseBtn" class="c6-btn" onclick="closeC6Cutscene()">돌아가기</button>
-</div>
+<div id="effect-layer"></div>
 
-<div class="wrapper">
-    <div class="main-layout">
-        
-        <div class="container">
-            <div class="dashboard">
-                <div class="stat"><span>현재 스택</span><b id="dispPity">0</b></div>
-                <div class="stat"><span>천장 여부</span><b id="dispGuaranteed">반천장</b></div>
-                <div class="stat"><span>누적 원석</span><b id="dispGems">0</b></div>
-                <div class="stat"><span>누적 결제액</span><b id="dispWon">₩ 0</b></div>
-                <div class="stat" style="color:var(--chicken)"><span>치킨 지수 🍗</span><b id="dispChicken">0.0 마리</b></div>
-            </div>
-            
-            <div id="stage" class="wish-stage">
-                <div id="multiNoticeOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,10,21,0.85); z-index:999; display:none; justify-content:center; align-items:center; color:#aaa; font-weight:bold; font-size:1.2em; text-align:center;">
-                    <span id="multiNoticeText">멀티방 참여 후 방장이 게임을 시작해야 기원이 가능합니다.</span>
-                </div>
-                <div id="effect-layer"></div>
-                <div id="stage-placeholder" style="color: rgba(255,255,255,0.15); font-size: 1.1em; pointer-events: none; text-align: center; font-weight: bold;">
-                    성간의 운석을 부르려면 하단의 기원 버튼을 누르세요
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button id="btn1" onclick="handleWish(1)">1회 기원</button>
-                <button id="btn10" onclick="handleWish(10)">10회 기원</button>
-                <button id="btnSkip" class="btn-skip" onclick="revealAll()">결과 즉시 확인</button>
-            </div>
-        </div>
-        
-        <div class="side-panel">
-            <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--blue);">⚔️ 실시간 멀티 대결 방 (선택)</h4>
-                
-                <div class="nick-box-area">
-                    <input type="text" id="editNickInput" style="background:transparent; border:none; color:var(--gold); font-weight:bold; font-size:0.95em; width:140px;" value="로딩 중...">
-                    <button onclick="changeNickname()" style="padding:4px 10px; font-size:0.75em; border-radius:5px;">이름 변경</button>
-                </div>
-                
-                <div class="input-group" id="roomControls">
-                    <button id="btnCreateRoom" onclick="createRoom()" style="background:#28a745; color:white;">방 생성</button>
-                    <input type="text" id="roomCodeInput" placeholder="방 코드 입력">
-                    <button id="btnJoinRoom" onclick="joinRoom()" style="background:#6c757d; color:white;">참여</button>
-                </div>
-                <div id="activeRoomInfo" style="font-size:0.85em; color:var(--gold); margin-bottom:5px;"></div>
-                <div id="gameStatusAlert">싱글 플레이어 모드</div>
-                
-                <div id="hostControlArea" style="display:none; margin-bottom:8px;">
-                    <button onclick="startGame()" style="width:100%; background:crimson; color:white; padding:8px; border-radius:5px; font-weight:bold;">🎮 대결 시작하기</button>
-                </div>
-                <div id="roomUserList" class="room-user-list"></div>
-            </div>
-
-            <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--purple);">📊 개인 기원 분석</h4>
-                <div style="font-size:0.85em; display:flex; flex-direction:column; gap:5px;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>보유 돌파 상태: <b id="dispConst" style="color:var(--radiance)">미보유</b></span>
-                        <span style="color:var(--gold); font-weight:bold;">🏆 나의 순위: <b id="myRealRank" style="color:#fff;">- 위</b></span>
-                    </div>
-                    <div>평균 5성 스택: <b id="anaAvg">0</b></div>
-                </div>
-            </div>
-
-            <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; color:var(--gold);">🏆 C6 명예의 전당 (최소 원석 순)</h4>
-                <div id="rankList" class="rank-list"></div>
-            </div>
-
-            <div class="panel-box">
-                <h4 style="margin:0 0 8px 0; border-bottom:1px solid #223; padding-bottom:4px;">📜 획득 기록</h4>
-                <div id="historyList" class="history-list"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="archive-panel">
-        <h4 style="margin:0 0 5px 0; color:var(--gold); display:flex; justify-content:space-between;">
-            <span>🗂️ 여행자 아카이브 (역대 플레이 기록 폴더)</span>
-            <span style="font-size:0.8em; color:#888;">풀돌(C6)을 완성할 때마다 독립된 판의 기록이 하나의 폴더처럼 누적되어 보존됩니다.</span>
-        </h4>
-        <div id="archiveGrid" class="archive-grid">
-            <div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요!</div>
-        </div>
-    </div>
+<div id="stage">
+    <div id="stage-placeholder">기원 버튼을 눌러주세요.</div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, where, deleteDoc } from "firebase/firestore";
-    import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
+    // --- 1. 확률 계산 및 모의 데이터 생성 함수 ---
+    function calculateOne() {
+        const rand = Math.random();
+        let rank = 3, isRadiance = false, name = "3성 무기", isPickup = false, constLevel = "";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCxj9RKhbsP04SESCfLNyp_QbIPssDXJFA",
-        authDomain: "wish-1b853.firebaseapp.com",
-        projectId: "wish-1b853",
-        storageBucket: "wish-1b853.firebasestorage.app",
-        messagingSenderId: "629417355340",
-        appId: "1:629417355340:web:08f16592fc48bbfc14ace9",
-        measurementId: "G-NKTJZEHYQ6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const rdb = getDatabase(app);
-
-    // 💾 요구사항: 새로고침 시 "과거 완료된 기록 폴더"만 로드하고, 현재 게임 진행 상황은 일절 저장/불러오지 않고 0으로 완전히 초기화!
-    let historyFolders = JSON.parse(localStorage.getItem('genshin_sim_folders')) || [];
-
-    // 🧼 [핵심] 현재 판 데이터는 로컬 스토리지 무시하고 언제나 완벽하게 '0' 상태에서 태초로 시작!
-    let globalStats = { pity5: 0, pity4: 0, totalPulls: 0, isGuaranteed: false, radianceStack: 0, results5: [], pickupCount: -1 };
-    let savedArchive = []; // 이번 판에 얻은 5성 임시 배열
-    
-    const COST_PER_PULL = 2410;
-    const CHICKEN_PRICE = 20000;
-    
-    let myName = ""; // 새로고침 시 언제나 다시 등록하도록 강제함
-    let currentRoomId = null;
-    let isFinishedC6 = false; 
-    let isHost = false;
-    let isMultiplayerMode = false;
-    let isGameStarted = true;
-
-    window.handleWish = handleWish;
-    window.revealAll = revealAll;
-    window.flipCard = flipCard;
-    window.submitInitialName = submitInitialName;
-    window.changeNickname = changeNickname;
-    window.createRoom = createRoom;
-    window.joinRoom = joinRoom;
-    window.startGame = startGame;
-    window.closeC6Cutscene = closeC6Cutscene;
-
-    window.onload = function() {
-        // 🔄 새로고침 완료 시 항상 이름 입력 모달이 대기하고 있도록 보장
-        document.getElementById('nameModal').style.display = 'flex';
-        document.getElementById('editNickInput').value = "로딩 중...";
-        document.getElementById('btn1').disabled = true;
-        document.getElementById('btn10').disabled = true;
-        syncUI();
-        renderArchiveFolders(); // 과거의 추억 폴더 목록은 그대로 렌더링!
-        calculateMyRank();
-    };
-
-    // 🔔 커스텀 토스트 알림창 출력 함수 (alert 방지용 우아한 인터페이스)
-    function showToast(message) {
-        const container = document.getElementById('toastContainer');
-        if(!container) return;
-        const toast = document.createElement('div');
-        toast.className = 'custom-toast';
-        toast.innerText = message;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add('show'), 50);
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        if (rand < 0.006) {
+            rank = 5; name = "5성 한정 캐릭터";
+            isPickup = Math.random() > 0.5;
+            if (isPickup) constLevel = "픽업!";
+            if (Math.random() < 0.1) isRadiance = true; 
+        } else if (rand < 0.057) {
+            rank = 4; name = "4성 캐릭터";
+        }
+        return { rank, isRadiance, name, isPickup, constLevel };
     }
 
-    function saveToLocalStorage() {
-        // [중요] 현재 진행중인 게임 수치는 절대 저장하지 않음으로써 다음 새로고침 시 영구 초기화를 보증함!
+    // --- 2. 유틸리티 함수 (화면 플래시, 카드 뒤집기) ---
+    function triggerFlash(color, maxOpacity) {
+        const flash = document.getElementById('flash-overlay');
+        flash.style.backgroundColor = color;
+        flash.style.opacity = maxOpacity;
+        setTimeout(() => { flash.style.opacity = '0'; }, 300);
     }
 
-    // 캐릭터 이스터에그 정의
-const resonance = {
-    "라이덴": { e: "effect-raiden" }, "Raiden": { e: "effect-raiden" },
-    "나히다": { e: "effect-nahida" }, "Nahida": { e: "effect-nahida" },
-    "푸리나": { e: "effect-furina" }, "Furina": { e: "effect-furina" },
-    "느비예트": { e: "effect-neuvillette" }, "Neuvillette": { e: "effect-neuvillette" },
-    "종려": { e: "effect-zhongli" }, "Zhongli": { e: "effect-zhongli" }
-};
-
-function submitInitialName() {
-    const input = document.getElementById('modalNameInput');
-    if(!input || !input.value.trim()) return showToast("사용할 이름을 입력해 주세요!");
-    
-    myName = input.value.trim();
-    
-    // 이스터에그 체크
-    if (resonance[myName]) {
-        document.body.className = resonance[myName].e;
-        showToast(`원소 공명 발생! ${myName}의 강력한 이펙트가 활성화됩니다!`);
-    } else {
-        document.body.className = '';
-    }
-
-    document.getElementById('editNickInput').value = myName;
-    document.getElementById('nameModal').style.display = 'none';
-    document.getElementById('btn1').disabled = false;
-    document.getElementById('btn10').disabled = false;
-    syncUI();
-    renderArchiveFolders();
-    showToast(`어서와, ${myName}! 행운이 가득하길 바랄게! 🍀`);
-}
-
-    function changeNickname() {
-        const newName = document.getElementById('editNickInput').value.trim();
-        if(!newName) return showToast("이름은 공백일 수 없습니다!");
-        myName = newName;
-        showToast("닉네임이 성공적으로 변경되었습니다!");
-        syncMultiplayerStatus();
-        calculateMyRank();
-    }
-
-    // 🏆 명예의 전당 갱신 처리 (동일 이름 중 '최고 기록'으로만 치환)
-    async function checkAndUploadC6() {
-        if(globalStats.pickupCount >= 6 && !isFinishedC6) {
-            isFinishedC6 = true;
-            playC6Cutscene();
-
-            // 이번 판이 무사히 풀돌로 끝났으니, 하나의 소중한 기록 파일(폴더)로 밀봉해서 브라우저 아카이브에 영구 저장!
-            saveCurrentGameToFolder();
-
-            const myUsedGems = globalStats.totalPulls * 160;
-            try {
-                // 1. 현재 입력한 닉네임과 똑같은 명예의 전당 기록이 있는지 서치
-                const q = query(collection(db, "c6_rankings"), where("name", "==", myName));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    let existingDoc = querySnapshot.docs[0];
-                    let existingGems = existingDoc.data().usedGems;
-
-                    // 2. 만약 이미 기록이 있는데 이번에 원석을 "더 적게" 써서 운 좋게 깼다면 기존 기록 삭제 후 새 최고기록 등극!
-                    if (myUsedGems < existingGems) {
-                        await deleteDoc(existingDoc.ref);
-                        await addDoc(collection(db, "c6_rankings"), { 
-                            name: myName, 
-                            pulls: globalStats.totalPulls, 
-                            usedGems: myUsedGems, 
-                            timestamp: Date.now() 
-                        });
-                        showToast("🎉 축하해! 기존의 내 기록을 뛰어넘어 새로운 최단 기록을 명예의 전당에 세웠어!");
-                    } else {
-                        showToast("이번에도 멋진 도전이었어! 하지만 아쉽게도 내 기존 랭킹 기록보다는 원석을 더 썼네 😅");
-                    }
-                } else {
-                    // 3. 기존에 등록된 기록이 없다면 최초 기록으로 바로 명예의 전당 박제!
-                    await addDoc(collection(db, "c6_rankings"), { 
-                        name: myName, 
-                        pulls: globalStats.totalPulls, 
-                        usedGems: myUsedGems, 
-                        timestamp: Date.now() 
-                    });
-                    showToast("🎉 명예의 전당에 첫 깃발을 꽂았어! 전당 리스트를 확인해봐!");
-                }
-            } catch (e) { console.error("명예의 전당 검증 중 데이터 통신 실패:", e); }
+    function flipCard(cardBackElement, res) {
+        // closest()를 이용해 클릭된 카드의 최상위 요소를 찾아 뒤집기 애니메이션 클래스 추가
+        const card = cardBackElement.closest('.card');
+        if (card && !card.classList.contains('flipped')) {
+            card.classList.add('flipped');
         }
     }
 
-    // 📁 이번 판의 뽑기 이력을 하나의 폴더 상자로 구성해서 로컬 아카이브에 보관하는 메커니즘
-    function saveCurrentGameToFolder() {
-        const totalWon = globalStats.totalPulls * COST_PER_PULL;
-        const newFolder = {
-            gameId: "GAME-" + Date.now(),
-            playerName: myName || "무명 여행자",
-            totalPulls: globalStats.totalPulls,
-            totalGems: globalStats.totalPulls * 160,
-            totalWon: totalWon,
-            chickenCount: (totalWon / CHICKEN_PRICE).toFixed(1),
-            date: new Date().toLocaleDateString(),
-            characters: [...savedArchive] // 5성들 이력 캡처
-        };
-        
-        historyFolders.unshift(newFolder); // 신규 폴더가 위로 가게 삽입
-        localStorage.setItem('genshin_sim_folders', JSON.stringify(historyFolders));
-        renderArchiveFolders();
-    }
-
-    // 🗺️ 하단 도감 그리드 영역을 이쁘장한 '플레이 폴더' 리스트 뷰형태로 복원 및 렌더링
-    function renderArchiveFolders() {
-        const grid = document.getElementById('archiveGrid');
-        if(!grid) return;
-        grid.innerHTML = '';
-
-        if(historyFolders.length === 0) {
-            grid.innerHTML = `<div style="color:#555; font-size:0.9em; padding:20px 0;">아직 보관된 시뮬레이터 기록 폴더가 없습니다. 첫 풀돌(C6)에 도전해 폴더를 획득해 보세요! 🎁</div>`;
-            return;
-        }
-
-        historyFolders.forEach((folder, idx) => {
-            const folderWrapper = document.createElement('div');
-            folderWrapper.className = 'history-folder-box';
-
-            let headerHtml = `
-                <div class="folder-header">
-                    <span class="folder-title">📁 플레이 기록 폴더 #${historyFolders.length - idx} (${folder.playerName})</span>
-                    <span class="folder-meta">📅 달성일: ${folder.date} | 📊 결과: <b>${folder.totalPulls}</b>뽑 (₩${folder.totalWon.toLocaleString()})</span>
-                </div>
-            `;
-
-            let charListHtml = `<div class="folder-char-list">`;
-            let pCount = -1;
-            
-            folder.characters.forEach(char => {
-                let cLabel = "";
-                if(char.isPickup) {
-                    pCount++;
-                    cLabel = pCount >= 6 ? "풀돌" : "C" + pCount;
-                }
-                charListHtml += `
-                    <div class="mini-char-card" style="background:${char.isRadiance ? 'linear-gradient(to top, #ff4ef0, #fff)' : 'linear-gradient(to top, #ffcc00, #fff)'};">
-                        ${char.name}
-                        <span class="mini-char-stack">${char.stack}스택</span>
-                        ${char.isPickup ? `<span class="mini-char-badge">${cLabel}</span>` : ''}
-                    </div>
-                `;
-            });
-            charListHtml += `</div>`;
-
-            folderWrapper.innerHTML = headerHtml + charListHtml;
-            grid.appendChild(folderWrapper);
-        });
-    }
-
-    async function calculateMyRank() {
-        if(globalStats.pickupCount < 6) {
-            document.getElementById('myRealRank').innerText = "C6 미달성";
-            return;
-        }
-        const myUsedGems = globalStats.totalPulls * 160;
-        const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"));
-        const snapshot = await getDocs(q);
-        let rank = 1;
-        let found = false;
-        snapshot.forEach((doc) => {
-            if(!found && doc.data().usedGems < myUsedGems) {
-                rank++;
-            }
-        });
-        document.getElementById('myRealRank').innerText = rank + " 위";
-    }
-
-    function listenRankings() {
-        const q = query(collection(db, "c6_rankings"), orderBy("usedGems", "asc"), limit(50));
-        onSnapshot(q, (snapshot) => {
-            const rankList = document.getElementById('rankList');
-            if(!rankList) return;
-            rankList.innerHTML = '';
-            let rank = 1;
-            
-            let seenNames = new Set();
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                if(!seenNames.has(data.name)){
-                    seenNames.add(data.name);
-                    const item = document.createElement('div');
-                    item.className = 'room-user-item';
-                    item.innerHTML = `<span><b>${rank}위.</b> ${data.name}</span><span style="color:var(--gold)">${data.usedGems.toLocaleString()}개 (${data.pulls}뽑)</span>`;
-                    rankList.appendChild(item);
-                    rank++;
-                }
-            });
-            if(rank === 1) rankList.innerHTML = `<div style="color:#666; text-align:center; padding-top:20px;">최초의 C6에 도전해보세요! 🚀</div>`;
-            calculateMyRank();
-        });
-    }
-    listenRankings();
-
-    function createRoom() {
-        if(!myName) return showToast("이름을 먼저 입력해주셔야 방을 생성할 수 있어! 👤");
-        const roomId = Math.floor(100000 + Math.random() * 900000).toString();
-        currentRoomId = roomId; isHost = true; isMultiplayerMode = true; isGameStarted = false;
-        set(ref(rdb, `rooms/${roomId}/info`), { host: myName, status: "waiting" });
-        document.getElementById('hostControlArea').style.display = 'block';
-        document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
-        
-        const overlay = document.getElementById('multiNoticeOverlay');
-        if(overlay) {
-            document.getElementById('multiNoticeText').innerText = "다른 대결 상대를 기다리고 있습니다.\n방장이 [대결 시작하기]를 누르면 대결이 시작됩니다.";
-            overlay.style.display = 'flex';
-        }
-        joinRoomSequence(roomId);
-    }
-
-    function joinRoom() {
-        const codeInput = document.getElementById('roomCodeInput');
-        if(!codeInput || !codeInput.value.trim()) return showToast("방 코드를 바르게 기입해줘! 🔢");
-        currentRoomId = codeInput.value.trim(); isHost = false; isMultiplayerMode = true; isGameStarted = false;
-        document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = true;
-        
-        const overlay = document.getElementById('multiNoticeOverlay');
-        if(overlay) {
-            document.getElementById('multiNoticeText').innerText = "방장이 대결을 시작할 때까지 대기 중입니다...";
-            overlay.style.display = 'flex';
-        }
-        joinRoomSequence(currentRoomId);
-    }
-
-    function joinRoomSequence(roomId) {
-        document.getElementById('activeRoomInfo').innerText = `접속된 방 코드: ${roomId}`;
-        document.getElementById('btnCreateRoom').disabled = document.getElementById('btnJoinRoom').disabled = document.getElementById('roomCodeInput').disabled = true;
-
-        const myStatusRef = ref(rdb, `rooms/${roomId}/users/${myName}`);
-        set(myStatusRef, { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() });
-        onDisconnect(myStatusRef).remove();
-        onValue(ref(rdb, `rooms/${roomId}/info`), (snapshot) => {
-            const info = snapshot.val(); if(!info) return;
-            if(info.status === "playing" && !isGameStarted) {
-                isGameStarted = true;
-                document.getElementById('gameStatusAlert').innerText = "⚔️ 실시간 대결 진행 중! ⚔️";
-                document.getElementById('gameStatusAlert').style.color = "crimson";
-                document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false;
-                document.getElementById('multiNoticeOverlay').style.display = 'none';
-            }
-        });
-        onValue(ref(rdb, `rooms/${roomId}/users`), (snapshot) => {
-            const users = snapshot.val(); const listContainer = document.getElementById('roomUserList');
-            if(!listContainer || !users) return; listContainer.innerHTML = '';
-            Object.keys(users).forEach(key => {
-                const u = users[key]; const item = document.createElement('div');
-                item.className = 'room-user-item';
-                item.innerHTML = `<span>👤 ${u.name} <b style="color:var(--gold)">[${u.constLevel}]</b></span><span>${u.pulls}뽑 <b style="color:var(--blue)">(${u.pity5}스택)</b></span>`;
-                listContainer.appendChild(item);
-            });
-        });
-    }
-
-    function startGame() { if(isHost && currentRoomId) update(ref(rdb, `rooms/${currentRoomId}/info`), { status: "playing" }); }
-    function getConstLabel() { return globalStats.pickupCount === -1 ? "미보유" : (globalStats.pickupCount >= 6 ? "풀돌" : "C"+globalStats.pickupCount); }
-    function syncMultiplayerStatus() { if (!isMultiplayerMode || !currentRoomId) return; update(ref(rdb, `rooms/${currentRoomId}/users/${myName}`), { name: myName, pulls: globalStats.totalPulls, constLevel: getConstLabel(), pity5: globalStats.pity5, lastUpdate: Date.now() }); }
-
-    function playC6Cutscene() {
-        const overlay = document.getElementById('c6Cutscene');
-        overlay.style.display = 'flex'; setTimeout(() => overlay.style.opacity = '1', 50);
-        for(let i=1; i<=6; i++) {
-            setTimeout(() => {
-                document.getElementById(`star${i}`).classList.add('active');
-                document.getElementById(`line${i}`).classList.add('draw');
-            }, i * 650);
-        }
-        setTimeout(() => { document.getElementById('c6Title').style.opacity = '1'; document.getElementById('c6Title').style.transform = 'translateY(0)'; document.getElementById('c6Title').style.transition = 'all 0.8s ease'; }, 4200);
-        setTimeout(() => { document.getElementById('c6Subtitle').style.opacity = '1'; document.getElementById('c6CloseBtn').style.opacity = '1'; }, 4800);
-    }
-    function closeC6Cutscene() { const overlay = document.getElementById('c6Cutscene'); overlay.style.opacity = '0'; setTimeout(() => overlay.style.display = 'none', 800); }
-
+    // --- 3. 기원 버튼 핸들러 (애니메이션 동기화 수정 완료) ---
     function handleWish(count) {
-        const stage = document.getElementById('stage'), effectLayer = document.getElementById('effect-layer');
-        const btn1 = document.getElementById('btn1'), btn10 = document.getElementById('btn10');
+        const stage = document.getElementById('stage');
+        const effectLayer = document.getElementById('effect-layer');
+        const btn1 = document.getElementById('btn1');
+        const btn10 = document.getElementById('btn10');
         const placeholder = document.getElementById('stage-placeholder');
         
         if(placeholder) placeholder.style.display = 'none';
+        
+        // 기존 카드 초기화
         Array.from(stage.querySelectorAll('.card')).forEach(c => c.remove());
-        effectLayer.innerHTML = ''; btn1.disabled = btn10.disabled = true;
+        effectLayer.innerHTML = ''; 
+        
+        // 연출 중 버튼 비활성화
+        btn1.disabled = btn10.disabled = true;
 
+        // 결과 생성
         const results = Array.from({length: count}, calculateOne);
         const maxRank = Math.max(...results.map(r => r.rank));
         const hasRad = results.some(r => r.isRadiance);
 
+        // 유성 생성
         const star = document.createElement('div');
         star.className = `shooting-star ${hasRad ? 'star-rad' : 'star-'+maxRank}`;
         effectLayer.appendChild(star);
-        if (maxRank >= 4) {
-            setTimeout(() => {
-                stage.classList.add('stage-dimmed');
-                const wave = document.createElement('div');
-                wave.className = `shockwave-impact ${hasRad ? 'wave-rad' : (maxRank === 5 ? 'wave-5' : 'wave-4')}`;
-                stage.appendChild(wave);
-                setTimeout(() => { wave.remove(); stage.classList.remove('stage-dimmed'); }, 1200);
-            }, 1500);
-        }
+        
+        // 플래시 및 파동 연출 타이밍 조절
+        if (maxRank === 4) setTimeout(() => triggerFlash('#a29bfe', 0.5), 800);
+        else if (maxRank === 5 || hasRad) setTimeout(() => triggerFlash('#ffffff', 0.8), 900);
+        
+        // CSS 애니메이션 시간에 맞춘 대기 시간 설정 (임의 단축 시간)
+        const animTimes = { 'star-3': 1000, 'star-4': 1000, 'star-5': 1000, 'star-rad': 1500 };
+        const totalWaitTime = (hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank]) + 100;
 
-        if (maxRank === 4) setTimeout(() => triggerFlash('#bf40ff', 0.4), 1400);
-        else if (maxRank === 5 || hasRad) setTimeout(() => triggerFlash('#ffffff', 0.8), 1650);
-        const animTimes = { 'star-3': 2000, 'star-4': 3500, 'star-5': 4200, 'star-rad': 5500 };
-        setTimeout(() => showCards(results, count), (hasRad ? animTimes['star-rad'] : animTimes['star-'+maxRank]) + 100);
+        // [핵심 수정] 연출이 끝난 후 카드 렌더링 호출
+        setTimeout(() => {
+            showCards(results, count);
+            btn1.disabled = btn10.disabled = false; // 버튼 다시 활성화
+        }, totalWaitTime);
     }
 
-    function triggerFlash(color, opacity) {
-        const flash = document.getElementById('flashOverlay');
-        if(!flash) return;
-        flash.style.background = color; flash.style.opacity = opacity; flash.style.transition = 'none';
-        setTimeout(() => { flash.style.transition = 'opacity 0.6s ease-out'; flash.style.opacity = 0; }, 50);
-    }
-
-    function calculateOne() {
-        let res = { rank: 3, name: "3성 무기", isRadiance: false, stack: 0, isPickup: false, constLevel: "" };
-        let chance = 0.6 + (globalStats.pity5 >= 74 ? (globalStats.pity5 - 73) * 6 : 0);
-        globalStats.pity5++; globalStats.totalPulls++; globalStats.pity4++;
-        if (Math.random() * 100 < chance || globalStats.pity5 >= 90) {
-            res.rank = 5;
-            res.stack = globalStats.pity5;
-            let win = false;
-            if (globalStats.isGuaranteed) { win = true; globalStats.isGuaranteed = false; }
-            else {
-                let radChance = (globalStats.radianceStack === 0) ? 5 : (globalStats.radianceStack === 1 ? 10 : 100);
-                if (Math.random() * 100 < 50) win = true;
-                else if (Math.random() * 100 < radChance) { win = true; res.isRadiance = true; }
-                else { win = false; globalStats.isGuaranteed = true; globalStats.radianceStack++; }
-            }
-            res.isPickup = win;
-            if (win) { globalStats.pickupCount++; res.constLevel = globalStats.pickupCount >= 6 ? "풀돌" : "C" + globalStats.pickupCount; }
-            res.name = win ? (res.isRadiance ? "별빛포착!" : "픽업 캐릭터") : "상시 캐릭터";
-            globalStats.pity5 = 0;
-            
-            savedArchive.push({
-                name: res.name,
-                rank: res.rank,
-                isRadiance: res.isRadiance,
-                isPickup: res.isPickup,
-                stack: res.stack,
-                timestamp: Date.now()
-            });
-        } else if (Math.random() * 100 < 5.1 || globalStats.pity4 >= 10) {
-            res.rank = 4;
-            res.name = "4성 캐릭터"; globalStats.pity4 = 0;
-        }
-        return res;
-    }
-
+    // --- 4. 카드 화면 출력 함수 (이벤트 바인딩 수정 완료) ---
     function showCards(results, count) {
         const stage = document.getElementById('stage');
         if(!stage) return;
         document.getElementById('btnSkip').style.display = 'block';
+        
         results.forEach((res, i) => {
-            const card = document.createElement('div'); card.className = `card`;
-            if(count === 1) card.style.maxWidth = "200px";
-            card.innerHTML = `<div class="card-inner">
-                <div class="card-back" onclick="flipCard(this, ${JSON.stringify(res).replace(/"/g, '&quot;')})"></div>
-                <div class="card-front res-${res.isRadiance ? 'rad' : res.rank}">
-                    <div style="font-size:0.6em;">${'✦'.repeat(res.rank)}</div>
-                    <div>${res.name}</div>
-                    ${res.isPickup ? `<div style="font-size:0.7em; margin-top:5px; color:#d32f2f; background:rgba(0,0,0,0.1); border-radius:10px; padding:2px 5px; display:inline-block;">${res.constLevel}</div>` : ''}
-                </div>
-            </div>`;
+            const card = document.createElement('div'); 
+            card.className = `card`;
+            
+            // 1회 기원일 경우 카드를 조금 더 크게 표시 (선택사항)
+            if(count === 1) {
+                card.style.width = "200px";
+                card.style.height = "300px";
+            }
+            
+            // 인라인 onclick 대신 순수 HTML 구조만 작성
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back"></div>
+                    <div class="card-front res-${res.isRadiance ? 'rad' : res.rank}">
+                        <div style="font-size: ${count === 1 ? '1.2em' : '0.8em'};">
+                            ${'✦'.repeat(res.rank)}
+                        </div>
+                        <div style="margin-top: 10px;">${res.name}</div>
+                        ${res.isPickup ? `
+                            <div style="font-size:0.8em; margin-top:10px; color:#d32f2f; background:rgba(255,255,255,0.7); border-radius:10px; padding:4px 8px; display:inline-block; font-weight:bold;">
+                                ${res.constLevel}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>`;
+            
+            // [핵심 수정] 안전한 이벤트 리스너 부착 방식
+            const cardBack = card.querySelector('.card-back');
+            cardBack.addEventListener('click', () => {
+                flipCard(cardBack, res);
+            });
+
             stage.appendChild(card);
-            setTimeout(() => card.classList.add('active'), i * 30);
+            
+            // 카드가 순차적으로 나타나는 효과
+            setTimeout(() => card.classList.add('active'), i * 80);
         });
     }
 
-    function flipCard(el, res) {
-        const card = el.closest('.card');
-        if(!card || card.classList.contains('flipped')) return;
-        card.classList.add('flipped');
-        
-        if(res.rank === 5) { globalStats.results5.push(res); updateHistory(res); }
-        
-        syncUI();
-        syncMultiplayerStatus();
-        checkAndUploadC6();
-        checkDone();
-    }
-
-    function syncUI() {
-        const totalWon = globalStats.totalPulls * COST_PER_PULL;
-        document.getElementById('dispPity').innerText = globalStats.pity5;
-        document.getElementById('dispGuaranteed').innerText = globalStats.isGuaranteed ? "확정권" : "반천장";
-        document.getElementById('dispGems').innerText = (globalStats.totalPulls * 160).toLocaleString();
-        document.getElementById('dispWon').innerText = "₩ " + totalWon.toLocaleString();
-        document.getElementById('dispChicken').innerText = (totalWon / CHICKEN_PRICE).toFixed(1) + " 마리";
-        document.getElementById('dispConst').innerText = getConstLabel();
-        if(globalStats.results5.length > 0) {
-            const avg = globalStats.results5.reduce((a, b) => a + b.stack, 0) / globalStats.results5.length;
-            document.getElementById('anaAvg').innerText = avg.toFixed(1);
-        } else {
-            document.getElementById('anaAvg').innerText = "0";
-        }
-    }
-
-    function updateHistory(res) {
-        const list = document.getElementById('historyList');
-        if(!list) return;
-        const item = document.createElement('div'); item.style.padding = "5px 0"; item.style.borderBottom = "1px solid #1f2736";
-        const color = res.isRadiance ? 'var(--radiance)' : (res.isPickup ? 'var(--gold)' : '#888');
-        item.innerHTML = `<span style="color:${color}">${res.name}${res.isPickup ? ' ['+res.constLevel+']' : ''}</span> <span style="float:right; color:#666;">${res.stack}스택</span>`;
-        list.prepend(item);
-    }
-
-    function revealAll() { document.querySelectorAll('.card:not(.flipped) .card-back').forEach((c, i) => setTimeout(() => c.click(), i * 35)); }
-    function checkDone() {
-        const total = document.querySelectorAll('.card').length, flipped = document.querySelectorAll('.card.flipped').length;
-        if (total > 0 && total === flipped) {
-            document.getElementById('btnSkip').style.display = 'none';
-            if(isGameStarted) { document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false; }
-        }
-    }
+    // --- 5. 버튼 이벤트 연결 ---
+    document.getElementById('btn1').addEventListener('click', () => handleWish(1));
+    document.getElementById('btn10').addEventListener('click', () => handleWish(10));
+    document.getElementById('btnSkip').addEventListener('click', () => {
+        // 스킵 로직 작성 (예: 현재 연출 중지 및 모든 카드 즉시 표시/뒤집기)
+        alert('스킵 기능은 아직 구현되지 않았습니다!');
+    });
 </script>
+
 </body>
 </html>
