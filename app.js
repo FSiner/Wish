@@ -1,13 +1,3 @@
-<script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js",
-                "firebase/database": "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"
-            }
-        }
-    </script>
-<script type="module">
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, where, deleteDoc } from "firebase/firestore";
     import { getDatabase, ref, set, onValue, update, onDisconnect } from "firebase/database";
@@ -509,4 +499,4 @@ function submitInitialName() {
             if(isGameStarted) { document.getElementById('btn1').disabled = document.getElementById('btn10').disabled = false; }
         }
     }
-</script>
+
