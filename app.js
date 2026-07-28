@@ -36,7 +36,28 @@
     window.handleWish = handleWish;
     window.revealAll = revealAll;
     window.flipCard = flipCard;
-    window.submitInitialName = submitInitialName;
+    window.submitInitialName = function() {
+    const input = document.getElementById('modalNameInput');
+    if(!input || !input.value.trim()) return showToast("사용할 이름을 입력해 주세요!");
+    
+    myName = input.value.trim();
+    
+    // 이스터에그 체크
+    if (resonance[myName]) {
+        document.body.className = resonance[myName].e;
+        showToast(`원소 공명 발생! ${myName}의 강력한 이펙트가 활성화됩니다!`);
+    } else {
+        document.body.className = '';
+    }
+
+    document.getElementById('editNickInput').value = myName;
+    document.getElementById('nameModal').style.display = 'none';
+    document.getElementById('btn1').disabled = false;
+    document.getElementById('btn10').disabled = false;
+    syncUI();
+    renderArchiveFolders();
+    showToast(`어서와, ${myName}! 행운이 가득하길 바랄게! 🍀`);
+};
     window.changeNickname = changeNickname;
     window.createRoom = createRoom;
     window.joinRoom = joinRoom;
