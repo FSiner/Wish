@@ -1,1 +1,159 @@
+    <style>
+        :root { 
+            --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
+            --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
+        }
+        body { 
+            background-color: var(--bg); color: white; font-family: 'Malgun Gothic', sans-serif; 
+            margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box;
+            display: flex; justify-content: center; align-items: flex-start; overflow-y: auto;
+        }
+        
+        /* 🚪 초기 닉네임 설정 팝업 (새로고침 시 무조건 등장!) */
+        .name-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 10, 21, 0.95); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .name-modal-box {
+            background: #111827; border: 2px solid var(--gold); padding: 30px;
+            border-radius: 20px; text-align: center; width: 350px;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.2);
+        }
+        .name-modal-box input {
+            width: 80%; background: #222; border: 1px solid #444; color: white;
+            padding: 10px; border-radius: 8px; font-size: 1em; text-align: center; margin-bottom: 20px;
+        }
+        .name-modal-box button { width: 88%; padding: 10px; border-radius: 8px; font-size: 1em; background: var(--gold); font-weight: bold; border: none; cursor: pointer; }
 
+        /* 🌠 C6 돌파 컷신 이펙트 레이어 */
+        .c6-cutscene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(12,20,40,1) 0%, rgba(3,5,15,1) 100%);
+            z-index: 3000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.8s ease; flex-direction: column;
+        }
+        .const-vessel { position: relative; width: 400px; height: 400px; }
+        .const-star {
+            position: absolute; width: 14px; height: 14px; background: #fff;
+            border-radius: 50%; box-shadow: 0 0 15px #fff; opacity: 0; transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .const-star.active { opacity: 1; transform: scale(1); background: var(--gold); box-shadow: 0 0 25px var(--gold); }
+        .const-svg { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
+        .const-line { stroke: rgba(255, 204, 0, 0.2); stroke-width: 2; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+        .const-line.draw { animation: drawLine 0.6s linear forwards; stroke: var(--gold); filter: drop-shadow(0 0 5px var(--gold)); }
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        .c6-title { font-size: 2.2em; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px var(--gold); margin-top: 30px; opacity: 0; transform: translateY(20px); }
+        .c6-subtitle { color: #aaa; margin-top: 8px; font-size: 1em; opacity: 0; }
+        .c6-btn { margin-top: 30px; padding: 10px 30px; border-radius: 20px; background: transparent; color: white; border: 1px solid #666; cursor: pointer; opacity: 0; }
+
+        /* 🖥️ 격자 형태 메인 레이아웃 보완 */
+        .wrapper { width: 100%; max-width: 1550px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .main-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; width: 100%; align-items: start; }
+        
+        .container { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .side-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        
+        .panel-box { background: rgba(10, 15, 25, 0.9); border: 1px solid #232d3f; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; box-sizing: border-box; }
+        .history-list, .rank-list, .room-user-list { flex-grow: 1; overflow-y: auto; font-size: 0.85em; max-height: 160px; min-height: 120px; padding-right: 5px; }
+
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+        .stat { background: rgba(26, 29, 40, 0.8); padding: 12px 8px; border-radius: 12px; border: 1px solid #253147; text-align: center; box-sizing: border-box; }
+        .stat span { display: block; font-size: 0.75em; color: #888; margin-bottom: 5px; }
+        .stat b { font-size: 1.1em; color: var(--gold); }
+
+        /* 🌠 뽑기 스테이지 핵심 고정 스타일 */
+        .wish-stage { 
+            position: relative; width: 100%; min-height: 480px; height: 480px;
+            background: radial-gradient(circle at center, #111b29 0%, #040812 100%); 
+            border-radius: 20px; display: flex; justify-content: center; align-items: center; 
+            gap: 10px; padding: 20px; border: 1px solid #253346; overflow: hidden; box-sizing: border-box;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+        }
+        
+        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        
+        /* 🌠 충격파 및 암전 연출 */
+        .shockwave-impact { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 150; }
+        .wave-4 { border: 6px solid var(--purple); box-shadow: 0 0 50px var(--purple), inset 0 0 30px var(--purple); animation: explode-wave 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        .wave-5 { border: 8px solid var(--gold); box-shadow: 0 0 100px var(--gold), inset 0 0 50px var(--gold); animation: explode-wave 1.0s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        .wave-rad { border: 10px solid var(--radiance); box-shadow: 0 0 120px var(--radiance), inset 0 0 60px var(--radiance); animation: explode-wave 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+        @keyframes explode-wave { 0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); border-width: 10px; } 100% { width: 1200px; height: 1200px; opacity: 0; transform: translate(-50%, -50%) scale(1); border-width: 1px; } }
+        .stage-dimmed { transition: background 0.1s ease-in; background: radial-gradient(circle at center, #020408 0%, #000000 100%) !important; }
+
+        .shooting-star { width: 20px; height: 600px; position: absolute; top: -700px; left: -10%; border-radius: 100px; opacity: 0; transform: rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 40px #4099ff; z-index: 200; }
+        .star-3 { animation: genshin-fall-3 2.0s ease-in-out forwards; }
+        .star-4 { animation: genshin-fall-4 3.5s ease-in-out forwards; }
+        .star-5 { animation: genshin-fall-5 4.2s ease-in-out forwards; }
+        .star-rad { animation: genshin-fall-rad 5.5s ease-in-out forwards; }
+
+        @keyframes genshin-fall-3 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-4 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 200px 30px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--purple)); box-shadow: 0 0 150px var(--purple); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-5 { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 350px 60px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--gold)); box-shadow: 0 0 250px 40px var(--gold); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+        @keyframes genshin-fall-rad { 0% { transform: translate(0,0) rotate(-45deg); opacity:0; background: linear-gradient(to bottom, transparent, #fff, #99ccff); } 15% { opacity:1; } 35% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, #99ccff); box-shadow: 0 0 50px #4099ff; } 42% { transform: translate(450px,450px) rotate(-45deg); background: #fff; box-shadow: 0 0 400px 80px #fff; } 45% { transform: translate(450px,450px) rotate(-45deg); background: linear-gradient(to bottom, transparent, #fff, var(--radiance)); box-shadow: 0 0 350px 60px var(--radiance); } 100% { transform: translate(1400px,1400px) rotate(-45deg); opacity:0; } }
+
+        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; opacity: 0; }
+
+        /* 카드 UI 스타일 */
+        .card { width: 9%; max-width: 105px; aspect-ratio: 9/16; perspective: 1000px; cursor: pointer; opacity: 0; z-index: 50; }
+        .card.active { opacity: 1; transition: 0.15s ease-out; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.25s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-back { background: #1e2230; border: 1px solid #334460; }
+        .card-front { transform: rotateY(180deg); color: #000; font-weight: bold; text-align: center; display: flex; flex-direction: column; justify-content: center; font-size: 0.8em; }
+        .res-5 { background: linear-gradient(145deg, #ffcc00, #fff); box-shadow: 0 0 20px #ffcc00; }
+        .res-rad { background: linear-gradient(145deg, #ff4ef0, #fff); box-shadow: 0 0 30px #ff4ef0; }
+        .res-4 { background: linear-gradient(145deg, #bf40ff, #fff); }
+        .res-3 { background: #3d4a5d; color: white; }
+
+        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 5px; width: 100%; }
+        button { padding: 12px 30px; border: none; border-radius: 50px; font-weight: bold; font-size: 1em; cursor: pointer; background: var(--gold); color:#111; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s; }
+        button:active { transform: scale(0.96); }
+        button:disabled { background: #333 !important; color: #777 !important; cursor: not-allowed; box-shadow: none; }
+        .btn-skip { background: #222530; color: white; border: 1px solid #445; display: none; }
+        
+        .input-group { display: flex; gap: 5px; margin-bottom: 8px; }
+        .input-group input { flex: 1; background: #1a1f2c; border: 1px solid #3a4b66; color: white; padding: 8px; border-radius: 5px; font-size: 0.85em; }
+        .input-group button { padding: 6px 12px; border-radius: 5px; font-size: 0.85em; }
+        .room-user-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2736; font-size: 0.9em; align-items: center; }
+        
+        /* 🗂️ 캐릭터 도감 내 '게임 기록 히스토리 폴더' UI 디자인 */
+        .archive-panel { background: rgba(13, 18, 30, 0.95); border: 1px solid #2a3a50; border-radius: 15px; padding: 15px; width: 100%; box-sizing: border-box; }
+        .archive-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; min-height: 80px; width: 100%; }
+        
+        .history-folder-box { background: #161d2a; border: 1px solid #2e3d56; border-radius: 10px; padding: 15px; width: 100%; box-sizing: border-box; }
+        .folder-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #3a4c66; padding-bottom: 8px; margin-bottom: 10px; }
+        .folder-title { color: var(--gold); font-weight: bold; font-size: 1.05em; }
+        .folder-meta { color: #778899; font-size: 0.85em; }
+        .folder-char-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .mini-char-card { color: #111; padding: 6px 10px; border-radius: 6px; font-size: 0.75em; font-weight: bold; position: relative; min-width: 85px; text-align: center; }
+        .mini-char-badge { position: absolute; top: -5px; right: -5px; background: #000; color: var(--gold); font-size: 0.7em; padding: 1px 4px; border-radius: 4px; }
+        .mini-char-stack { display: block; font-size: 0.85em; color: #555; font-weight: normal; }
+
+        #gameStatusAlert { text-align: center; color: #5bc0de; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
+        .nick-box-area { background: rgba(255, 204, 0, 0.05); border: 1px dashed var(--gold); padding: 8px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 🔔 고급스러운 커스텀 알림 토스트 UI */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .custom-toast {
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--gold);
+            color: white; padding: 12px 24px; border-radius: 10px; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9em;
+        }
+        .custom-toast.show { opacity: 1; transform: translateY(0); }
+        /* 캐릭터별 원소 폭발 효과 */
+.effect-raiden { background: radial-gradient(circle, #4c1d95, #000) !important; animation: lightning 0.5s infinite; }
+@keyframes lightning { 0% { filter: brightness(1); } 50% { filter: brightness(2) hue-rotate(20deg); } }
+.effect-nahida { background: radial-gradient(circle, #064e3b, #000) !important; border: 5px solid #34d399; }
+.effect-furina { background: radial-gradient(circle, #1e3a8a, #000) !important; animation: wave 2s infinite ease-in-out; }
+@keyframes wave { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
+.effect-neuvillette { background: linear-gradient(to bottom, #1e40af, #000) !important; }
+.effect-zhongli { background: radial-gradient(circle, #78350f, #000) !important; animation: shake 0.3s infinite; }
+@keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
+    </style>
