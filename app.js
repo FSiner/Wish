@@ -54,15 +54,28 @@
     window.closeC6Cutscene = closeC6Cutscene;
 
     window.onload = function() {
-        // 🔄 새로고침 완료 시 항상 이름 입력 모달이 대기하고 있도록 보장
-        document.getElementById('nameModal').style.display = 'flex';
-        document.getElementById('editNickInput').value = "로딩 중...";
-        document.getElementById('btn1').disabled = true;
-        document.getElementById('btn10').disabled = true;
+    // 요소가 존재하는지 확인(?.)하고 안전하게 실행
+    const nameModal = document.getElementById('nameModal');
+    if (nameModal) nameModal.style.display = 'flex';
+    
+    const editNickInput = document.getElementById('editNickInput');
+    if (editNickInput) editNickInput.value = "로딩 중...";
+    
+    const btn1 = document.getElementById('btn1');
+    if (btn1) btn1.disabled = true;
+
+    const btn10 = document.getElementById('btn10');
+    if (btn10) btn10.disabled = true;
+    
+    // UI 업데이트 함수들 실행
+    try {
         syncUI();
-        renderArchiveFolders(); // 과거의 추억 폴더 목록은 그대로 렌더링!
+        renderArchiveFolders();
         calculateMyRank();
-    };
+    } catch (e) {
+        console.error("초기화 중 에러 발생:", e);
+    }
+};
 
     // 🔔 커스텀 토스트 알림창 출력 함수 (alert 방지용 우아한 인터페이스)
     function showToast(message) {
