@@ -1,22 +1,22 @@
-    <style>
+<style>
         :root { 
-    --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
-    --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
-}
+            --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
+            --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
+        }
 
-body { 
-    background-color: #050a15; /* var(--bg) 대신 직접 어두운 색상 코드 입력 */
-    color: white; 
-    font-family: 'Malgun Gothic', sans-serif; 
-    margin: 0; 
-    padding: 20px; 
-    min-height: 100vh; 
-    box-sizing: border-box;
-    display: flex; 
-    justify-content: center; 
-    align-items: flex-start; 
-    overflow-y: auto;
-}
+        body { 
+            background-color: #050a15; /* var(--bg) 대신 직접 어두운 색상 코드 입력 */
+            color: white; 
+            font-family: 'Malgun Gothic', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            box-sizing: border-box;
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            overflow-y: auto;
+        }
         
         /* 🚪 초기 닉네임 설정 팝업 (새로고침 시 무조건 등장!) */
         .name-modal-overlay {
@@ -156,13 +156,14 @@ body {
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9em;
         }
         .custom-toast.show { opacity: 1; transform: translateY(0); }
+
         /* 캐릭터별 원소 폭발 효과 */
-.effect-raiden { background: radial-gradient(circle, #4c1d95, #000) !important; animation: lightning 0.5s infinite; }
-@keyframes lightning { 0% { filter: brightness(1); } 50% { filter: brightness(2) hue-rotate(20deg); } }
-.effect-nahida { background: radial-gradient(circle, #064e3b, #000) !important; border: 5px solid #34d399; }
-.effect-furina { background: radial-gradient(circle, #1e3a8a, #000) !important; animation: wave 2s infinite ease-in-out; }
-@keyframes wave { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
-.effect-neuvillette { background: linear-gradient(to bottom, #1e40af, #000) !important; }
-.effect-zhongli { background: radial-gradient(circle, #78350f, #000) !important; animation: shake 0.3s infinite; }
-@keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
+        .effect-raiden { background: radial-gradient(circle, #4c1d95, #000) !important; animation: lightning 0.5s infinite; }
+        @keyframes lightning { 0% { filter: brightness(1); } 50% { filter: brightness(2) hue-rotate(20deg); } }
+        .effect-nahida { background: radial-gradient(circle, #064e3b, #000) !important; border: 5px solid #34d399; }
+        .effect-furina { background: radial-gradient(circle, #1e3a8a, #000) !important; animation: wave 2s infinite ease-in-out; }
+        @keyframes wave { 0% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
+        .effect-neuvillette { background: linear-gradient(to bottom, #1e40af, #000) !important; }
+        .effect-zhongli { background: radial-gradient(circle, #78350f, #000) !important; animation: shake 0.3s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
     </style>
