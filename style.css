@@ -1,4 +1,4 @@
-<style>
+
         :root { 
             --gold: #ffcc00; --purple: #bf40ff; --blue: #4099ff; 
             --bg: #050a15; --radiance: #ff4ef0; --chicken: #ff9f43; 
@@ -166,4 +166,3 @@
         .effect-neuvillette { background: linear-gradient(to bottom, #1e40af, #000) !important; }
         .effect-zhongli { background: radial-gradient(circle, #78350f, #000) !important; animation: shake 0.3s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 100% { transform: translate(-1px, -1px); } }
-    </style>
